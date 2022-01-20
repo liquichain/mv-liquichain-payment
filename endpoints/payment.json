@@ -1,0 +1,22 @@
+{
+  "code" : "payment",
+  "secured" : false,
+  "checkPathParams" : false,
+  "serviceCode" : "io.liquichain.api.payment.LiquichainPaymentScript",
+  "synchronous" : true,
+  "method" : "POST",
+  "parameterMappings" : [ {
+    "serviceParameter" : "orderId",
+    "multivalued" : false,
+    "parameterName" : "0",
+    "defaultValue" : "0",
+    "valueRequired" : false
+  } ],
+  "pathParameters" : [ ],
+  "roles" : [ ],
+  "returnedVariableName" : "result",
+  "serializeResult" : false,
+  "contentType" : "application/json",
+  "basePath" : "payment",
+  "path" : "/"
+}
