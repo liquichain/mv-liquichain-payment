@@ -1,0 +1,17 @@
+{
+  "code" : "io.liquichain.api.payment.ConversionRateScript",
+  "description" : "convert EUR to LIC",
+  "inputs" : [ ],
+  "outputs" : [ {
+    "name" : "result",
+    "type" : "String"
+  } ],
+  "generateOutputs" : false,
+  "type" : "JAVA",
+  "transactionType" : "SAME",
+  "script" : "package io.liquichain.api.payment;\r\n\r\nimport java.math.BigDecimal;\r\nimport java.math.RoundingMode;\r\nimport java.util.Map;\r\n\r\nimport org.meveo.service.script.Script;\r\nimport org.meveo.admin.exception.BusinessException;\r\n\r\npublic class ConversionRateScript extends Script {\r\n\t\r\n    private String result;\r\n\r\n    public String getResult() {\r\n        return result;\r\n    }\r\n\r\n    public static BigDecimal LCN_TO_EUR = (new BigDecimal(2000)).setScale(9, RoundingMode.HALF_UP);\r\n    public static BigDecimal EUR_TO_LCN = new BigDecimal(0.0005).setScale(9, RoundingMode.HALF_UP);\r\n    public static BigDecimal KLC_TO_EUR = new BigDecimal(1000).setScale(9, RoundingMode.HALF_UP);\r\n    public static BigDecimal EUR_TO_KLC = new BigDecimal(0.001).setScale(9, RoundingMode.HALF_UP);\r\n  \r\n\t@Override\r\n\tpublic void execute(Map<String, Object> parameters) throws BusinessException {\r\n\t\tresult=\"{\\\"data\\\":[\\n\"\r\n          +\"{\\\"from\\\":{\\\"value\\\":1,\\\"currency\\\":\\\"LCN\\\"},\\\"to\\\":{\\\"value\\\":\"+LCN_TO_EUR+\",\\\"currency\\\":\\\"EUR\\\"}},\\n\"\r\n          +\"{\\\"from\\\":{\\\"value\\\":1,\\\"currency\\\":\\\"EUR\\\"},\\\"to\\\":{\\\"value\\\":\"+EUR_TO_LCN+\",\\\"currency\\\":\\\"LCN\\\"}},\\n\"\r\n          +\"{\\\"from\\\":{\\\"value\\\":1,\\\"currency\\\":\\\"KLC\\\"},\\\"to\\\":{\\\"value\\\":\"+KLC_TO_EUR+\",\\\"currency\\\":\\\"EUR\\\"}},\\n\"\r\n          +\"{\\\"from\\\":{\\\"value\\\":1,\\\"currency\\\":\\\"EUR\\\"},\\\"to\\\":{\\\"value\\\":\"+EUR_TO_KLC+\",\\\"currency\\\":\\\"KLC\\\"}}\\n\"\r\n          +\"],\\n\"\r\n          +\"\\\"timestamp\\\":\"+System.currentTimeMillis()+\"\\n\"\r\n          +\"}\";\r\n\t}\r\n\t\r\n}",
+  "executionRoles" : [ ],
+  "sourcingRoles" : [ ],
+  "mavenDependencies" : [ ],
+  "importScriptInstances" : [ ]
+}
