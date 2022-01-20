@@ -1,0 +1,9 @@
+{
+  "code" : "LIQUICHAIN_PAYMENT",
+  "description" : "Liquichain Payment gateway",
+  "license" : "GPL",
+  "currentVersion" : "0.7",
+  "isInDraft" : true,
+  "moduleDependencies" : [ ],
+  "moduleFiles" : [ ]
+}
