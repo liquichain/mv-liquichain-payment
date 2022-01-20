@@ -1,0 +1,14 @@
+{
+  "code" : "PaypalOrder",
+  "name" : "Paypal order",
+  "description" : "Paypal order",
+  "customEntityCategoryCode" : "liquichain",
+  "availableStorages" : [ "SQL" ],
+  "sqlStorageConfiguration" : {
+    "storeAsTable" : true
+  },
+  "samples" : [ ],
+  "audited" : false,
+  "fields" : [ ],
+  "actions" : [ ]
+}
