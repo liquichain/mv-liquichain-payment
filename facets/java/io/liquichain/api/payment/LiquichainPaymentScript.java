@@ -158,7 +158,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                 result = createErrorResponse(orderId, "406", message);
             } else if (StringUtils.isNotBlank(order.status()) && "COMPLETED".equalsIgnoreCase(order.status())) {
                 try {
-                    BigInteger amountInDemos = (new BigInteger(paypalOrder.getToAmount())).multiply(BigInteger.TEN.pow(18));
+                    BigInteger amountInDemos = (new BigDecimal(paypalOrder.getToAmount())).multiply(BigDecimal.TEN.pow(18)).toBigInteger() ;
                     String transactionHash = liquichainTransaction.transfer(originWallet,paypalOrder.getToWallet(),amountInDemos);
                     log.info("created transaction, transactionHash={}",transactionHash);
                     paypalOrder.setStatus("OK");
