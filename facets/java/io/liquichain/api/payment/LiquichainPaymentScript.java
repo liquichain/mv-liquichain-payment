@@ -82,7 +82,7 @@ public class LiquichainPaymentScript extends EndpointScript {
         Map<String, Object> from = (Map<String, Object>) parameters.get("from");
         Map<String, Object> to = (Map<String, Object>) parameters.get("to");
         String publicAddress = (String) parameters.get("account");
-        String returnUrl = "https://account.liquichain.io/";
+        String returnUrl = "https://dev.telecelplay.io/";
 		log.info("orderId from setter :{}",orderId);
         String path = this.endpointRequest.getPathInfo();
         if(path.lastIndexOf("/")==16){
@@ -106,7 +106,7 @@ public class LiquichainPaymentScript extends EndpointScript {
             if (StringUtils.isNotBlank(publicAddress)) {
                 try {
                     Wallet toWallet = crossStorageApi.find(defaultRepo,publicAddress.toLowerCase(), Wallet.class);
-                    Wallet fromWallet = crossStorageApi.find(defaultRepo,originWallet, Wallet.class);
+                    Wallet fromWallet = crossStorageApi.find(defaultRepo,originWallet.toLowerCase(), Wallet.class);
                     BigInteger amount = new BigDecimal(to.get("amount").toString()).movePointRight(18).toBigInteger();
 				    BigInteger originBalance = new BigInteger(fromWallet.getBalance());
         			log.info("originWallet 0x{} old balance:{} amount:{}",originWallet,fromWallet.getBalance(),amount);
