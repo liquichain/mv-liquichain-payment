@@ -53,7 +53,7 @@ public class LiquichainPaymentScript extends EndpointScript {
 
     private String orderId = null;
 
-    private String originWallet = "212dFDD1Eb4ee053b2f5910808B7F53e3D49AD2f".toLowerCase();
+    private String originWallet = "deE0d5bE78E1Db0B36d3C1F908f4165537217333".toLowerCase();
 
     private CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
     private RepositoryService repositoryService = getCDIBean(RepositoryService.class);
