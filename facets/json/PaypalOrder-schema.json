@@ -4,5 +4,135 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "id": "PaypalOrder",
     "title": "Paypal order",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "orderId": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "OrderId",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_orderId",
+            "title": "PaypalOrder.orderId",
+            "type": "string",
+            "maxLength": 255
+        },
+        "toCurrency": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to currency",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toCurrency",
+            "title": "PaypalOrder.toCurrency",
+            "type": "string",
+            "maxLength": 5
+        },
+        "fromWallet": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "from wallet",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_fromWallet",
+            "title": "PaypalOrder.fromWallet",
+            "type": "string",
+            "maxLength": 40
+        },
+        "fromAmount": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "from amount",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_fromAmount",
+            "title": "PaypalOrder.fromAmount",
+            "type": "string",
+            "maxLength": 50
+        },
+        "toAmount": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to amount",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toAmount",
+            "title": "PaypalOrder.toAmount",
+            "type": "string",
+            "maxLength": 50
+        },
+        "fromCurrency": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "from currency",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_fromCurrency",
+            "title": "PaypalOrder.fromCurrency",
+            "type": "string",
+            "maxLength": 5
+        },
+        "creationDate": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "format": "date-time",
+            "description": "creation date",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_creationDate",
+            "title": "PaypalOrder.creationDate",
+            "type": "string"
+        },
+        "error": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Error",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_PaypalOrder_error",
+            "title": "PaypalOrder.error",
+            "type": "string"
+        },
+        "status": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "status (CREATED,OK,KO,ALERT)",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_PaypalOrder_status",
+            "title": "PaypalOrder.status",
+            "enum": [
+                "CREATED",
+                "KO",
+                "ALERT",
+                "OK"
+            ]
+        },
+        "toWallet": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to wallet",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toWallet",
+            "title": "PaypalOrder.toWallet",
+            "type": "string",
+            "maxLength": 40
+        }
+    },
+    "required": [
+        "creationDate",
+        "fromAmount",
+        "fromCurrency",
+        "fromWallet",
+        "toAmount",
+        "toCurrency",
+        "toWallet"
+    ]
 }
