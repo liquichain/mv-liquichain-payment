@@ -105,8 +105,8 @@ public class LiquichainPaymentScript extends EndpointScript {
         if (orderId == null || orderId.equals("0")) {
             if (StringUtils.isNotBlank(publicAddress)) {
                 try {
-                    Wallet toWallet = crossStorageApi.find(defaultRepo, Wallet.class).by("hexHash", publicAddress.toLowerCase()).getResult();
-                    Wallet fromWallet = crossStorageApi.find(defaultRepo, Wallet.class).by("hexHash", originWallet).getResult();
+                    Wallet toWallet = crossStorageApi.find(defaultRepo,publicAddress.toLowerCase(), Wallet.class);
+                    Wallet fromWallet = crossStorageApi.find(defaultRepo,originWallet, Wallet.class);
                     BigInteger amount = new BigDecimal(to.get("amount").toString()).movePointRight(18).toBigInteger();
 				    BigInteger originBalance = new BigInteger(fromWallet.getBalance());
         			log.info("originWallet 0x{} old balance:{} amount:{}",originWallet,fromWallet.getBalance(),amount);
