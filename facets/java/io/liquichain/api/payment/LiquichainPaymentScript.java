@@ -27,7 +27,6 @@ import org.meveo.api.rest.technicalservice.EndpointScript;
 import org.meveo.admin.exception.BusinessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.math.BigInteger;
 import org.meveo.model.customEntities.Wallet;
 import org.meveo.model.customEntities.PaypalOrder;
 import org.meveo.model.customEntities.Transaction;
@@ -41,6 +40,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.web3j.crypto.*;
 
 import javax.servlet.http.HttpServletRequest;
+
+import  io.liquichain.api.core.LiquichainTransaction;
 
 public class LiquichainPaymentScript extends EndpointScript {
 
@@ -59,6 +60,7 @@ public class LiquichainPaymentScript extends EndpointScript {
     private Repository defaultRepo = repositoryService.findDefaultRepository();
     private CustomEntityTemplateService customEntityTemplateService = getCDIBean(CustomEntityTemplateService.class);
     private CrossStorageService crossStorageService = getCDIBean(CrossStorageService.class);
+    private LiquichainTransaction liquichainTransaction= new LiquichainTransaction();
 
     public String getResult() {
         return result;
@@ -155,27 +157,9 @@ public class LiquichainPaymentScript extends EndpointScript {
                 }
                 result = createErrorResponse(orderId, "406", message);
             } else if (StringUtils.isNotBlank(order.status()) && "COMPLETED".equalsIgnoreCase(order.status())) {
-                Transaction transac = new Transaction();
-        		transac.setHexHash(orderId);
-        		transac.setFromHexHash(originWallet);
-        		transac.setToHexHash(paypalOrder.getToWallet());
-        		
-        		//FIXME: increment the nonce
-        		transac.setNonce("1");
-      
-        		transac.setGasPrice("0");
-        		transac.setGasLimit("0");
-        		transac.setValue(paypalOrder.getToAmount());
-              
-        		//FIXME: sign the transaction
-        		transac.setSignedHash(UUID.randomUUID().toString());
-              
-        		transac.setCreationDate(java.time.Instant.now());
                 try {
-        			crossStorageApi.createOrUpdate(defaultRepo, transac);
-
-                	//FIXME: you should get the BlockForgerScript from scriptService
-        			BlockForgerScript.addTransaction(transac);
+                    String transactionHash = liquichainTransaction.transfer(originWallet,paypalOrder.getToWallet(),new BigInteger(paypalOrder.getToAmount()));
+                    log.info("created transaction, transactionHash={}",transactionHash);
                     paypalOrder.setStatus("OK");
                   	try {
         		   		crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
