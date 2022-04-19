@@ -1,7 +1,6 @@
 package io.liquichain.api.payment;
 
 import com.google.gson.Gson;
-import io.liquichain.core.BlockForgerScript;
 
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
@@ -15,80 +14,65 @@ import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.io.IOException;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.meveo.admin.util.pagination.PaginationConfiguration;
+import org.meveo.commons.utils.ParamBean;
+import org.meveo.commons.utils.ParamBeanFactory;
 import org.meveo.commons.utils.StringUtils;
-import org.meveo.model.customEntities.CustomEntityInstance;
-import org.meveo.model.customEntities.CustomEntityTemplate;
-import org.meveo.persistence.CrossStorageService;
-import org.meveo.service.custom.CustomEntityTemplateService;
-import org.meveo.service.custom.NativeCustomEntityInstanceService;
 import org.meveo.api.rest.technicalservice.EndpointScript;
 import org.meveo.admin.exception.BusinessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.meveo.service.script.Script;
 import org.meveo.model.customEntities.Wallet;
 import org.meveo.model.customEntities.PaypalOrder;
-import org.meveo.model.customEntities.Transaction;
 import org.meveo.model.storage.Repository;
 import org.meveo.service.storage.RepositoryService;
 import org.meveo.api.persistence.CrossStorageApi;
-import org.meveo.api.exception.EntityDoesNotExistsException;
+
+import io.liquichain.api.core.LiquichainTransaction;
+
+import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.web3j.crypto.*;
-
-import javax.servlet.http.HttpServletRequest;
-
-import  io.liquichain.api.core.LiquichainTransaction;
-
 public class LiquichainPaymentScript extends EndpointScript {
 
-    private static final Logger log = LoggerFactory.getLogger(LiquichainPaymentScript.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LiquichainPaymentScript.class);
 
-    private long chainId = 76;
+    private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
+    private final RepositoryService repositoryService = getCDIBean(RepositoryService.class);
+    private final Repository defaultRepo = repositoryService.findDefaultRepository();
+    private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
+    private final ParamBean config = paramBeanFactory.getInstance();
 
+    public final String ORIGIN_WALLET = "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623".toLowerCase();
+    // config.getProperty("wallet.origin.account", "deE0d5bE78E1Db0B36d3C1F908f4165537217333");
+    private final String RETURN_URL = config
+            .getProperty("payment.capture.url", "https://dev.telecelplay.io/");
+
+    private final LiquichainTransaction liquichainTransaction = new LiquichainTransaction();
     private String result;
-
     private String orderId = null;
-
-    public static final String originWallet = "deE0d5bE78E1Db0B36d3C1F908f4165537217333".toLowerCase();
-
-    private CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
-    private RepositoryService repositoryService = getCDIBean(RepositoryService.class);
-    private Repository defaultRepo = repositoryService.findDefaultRepository();
-    private CustomEntityTemplateService customEntityTemplateService = getCDIBean(CustomEntityTemplateService.class);
-    private CrossStorageService crossStorageService = getCDIBean(CrossStorageService.class);
-    private LiquichainTransaction liquichainTransaction= new LiquichainTransaction();
 
     public String getResult() {
         return result;
     }
 
     public void setOrderId(String orderId) {
-      	log.info("orderId setter {}", orderId);
         this.orderId = orderId;
-    }
-  
-  	public String getOrderId() {
-    	return orderId;
     }
 
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
-      	log.info("orderId from path={}", getOrderId());
-        String message = "Wallet does not exists";
+        String message = "Wallet does not exist";
         Map<String, Object> from = (Map<String, Object>) parameters.get("from");
         Map<String, Object> to = (Map<String, Object>) parameters.get("to");
         String publicAddress = (String) parameters.get("account");
-        String returnUrl = "https://dev.telecelplay.io/";
-		log.info("orderId from setter :{}",orderId);
         String path = this.endpointRequest.getPathInfo();
-        if(path.lastIndexOf("/")==16){
-        	orderId = path.substring(17);
+        if (path.lastIndexOf("/") == 16) {
+            orderId = path.substring(17);
         }
-        log.info("execute paymentScript, orderId={}  account=0x{}, path={}, lastIndex:{}",orderId,publicAddress,path,path.lastIndexOf("/"));
+        LOG.info("execute paymentScript, orderId={}  account=0x{}, path={}, lastIndex:{}",
+                orderId, publicAddress, path, path.lastIndexOf("/"));
         List<OrderItem> orderItems = new ArrayList<>();
 
         if (from != null) {
@@ -102,34 +86,38 @@ public class LiquichainPaymentScript extends EndpointScript {
         Gson gson = new Gson();
         OrderService orderService = new OrderService();
 
-        if (orderId == null || orderId.equals("0")) {
+        if (orderId == null || "0".equals(orderId)) {
             if (StringUtils.isNotBlank(publicAddress)) {
                 try {
-                    Wallet toWallet = crossStorageApi.find(defaultRepo,publicAddress.toLowerCase(), Wallet.class);
-                    Wallet fromWallet = crossStorageApi.find(defaultRepo,originWallet.toLowerCase(), Wallet.class);
-                    BigInteger amount = new BigDecimal(to.get("amount").toString()).movePointRight(18).toBigInteger();
-				    BigInteger originBalance = new BigInteger(fromWallet.getBalance());
-        			log.info("originWallet 0x{} old balance:{} amount:{}",originWallet,fromWallet.getBalance(),amount);
-        			if(amount.compareTo(originBalance)<=0){
-                      	log.info("create paypal order");
-                        order = orderService.createOrder(orderItems, returnUrl);
-                      	log.info("return orderId :{}",order.id());
+                    Wallet toWallet = crossStorageApi.find(defaultRepo, publicAddress.toLowerCase(),
+                            Wallet.class);
+                    Wallet fromWallet =
+                            crossStorageApi.find(defaultRepo, ORIGIN_WALLET, Wallet.class);
+                    BigInteger amount = new BigDecimal(to.get("amount").toString())
+                            .movePointRight(18).toBigInteger();
+                    BigInteger originBalance = new BigInteger(fromWallet.getBalance());
+                    LOG.info("origin wallet: 0x{} old balance:{} amount:{}",
+                            ORIGIN_WALLET, fromWallet.getBalance(), amount);
+                    if (amount.compareTo(originBalance) <= 0) {
+                        LOG.info("create paypal order");
+                        order = orderService.createOrder(orderItems, RETURN_URL);
+                        LOG.info("return orderId :{}", order.id());
                         PaypalOrder paypalOrder = new PaypalOrder();
                         paypalOrder.setCreationDate(Instant.now());
                         paypalOrder.setOrderId(order.id());
-                        paypalOrder.setFromWallet(originWallet);
+                        paypalOrder.setFromWallet(ORIGIN_WALLET);
                         paypalOrder.setFromCurrency(from.get("currency").toString());
                         paypalOrder.setFromAmount(from.get("amount").toString());
-                        paypalOrder.setToWallet(publicAddress);
-                        //FIXME; use conversion rate
+                        paypalOrder.setToWallet(publicAddress.toLowerCase());
+                        // FIXME; use conversion rate
                         paypalOrder.setToCurrency(to.get("currency").toString());
                         paypalOrder.setToAmount(to.get("amount").toString());
-                		paypalOrder.setStatus("CREATED");
-        				crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
+                        paypalOrder.setStatus("CREATED");
+                        crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
                         result = gson.toJson(order);
-                      	log.info("persisted paypalOrder, result order:{}",result);
-        			} else {
-                      	log.error("Insufficient global balance");
+                        LOG.info("persisted paypalOrder, result order:{}", result);
+                    } else {
+                        LOG.error("Insufficient global balance");
                         result = createErrorResponse(null, "501", "Insufficient global balance");
                     }
                 } catch (Exception e) {
@@ -137,114 +125,108 @@ public class LiquichainPaymentScript extends EndpointScript {
                     result = createErrorResponse(null, "-32700", e.getMessage());
                 }
             } else {
-                log.error("account publicAddress:{}",publicAddress);
+                LOG.error("account publicAddress:{}", publicAddress);
                 result = createErrorResponse(null, "404", message);
             }
         } else {
-            log.info("capture {}",orderId);
+            LOG.info("capture {}", orderId);
             order = orderService.captureOrder(orderId);
-			PaypalOrder paypalOrder = crossStorageApi.find(defaultRepo, PaypalOrder.class).by("orderId", orderId).getResult();
-            if (order == null || paypalOrder==null) {
-                message = "Cannot capture order:"+orderId;
-                if(paypalOrder!=null){
-                	paypalOrder.setStatus("KO");
+            PaypalOrder paypalOrder = crossStorageApi.find(defaultRepo, PaypalOrder.class)
+                    .by("orderId", orderId)
+                    .getResult();
+
+            if (order == null || paypalOrder == null) {
+                message = "Cannot capture order:" + orderId;
+                if (paypalOrder != null) {
+                    paypalOrder.setStatus("KO");
                     paypalOrder.setError(message);
-                    try{
-        				crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                    } catch (Exception e){
-                      e.printStackTrace();
+                    try {
+                        crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 result = createErrorResponse(orderId, "406", message);
-            } else if (StringUtils.isNotBlank(order.status()) && "COMPLETED".equalsIgnoreCase(order.status())) {
+            } else if (StringUtils.isNotBlank(order.status())
+                    && "COMPLETED".equalsIgnoreCase(order.status())) {
                 try {
-                    BigInteger amountInDemos = (new BigDecimal(paypalOrder.getToAmount())).multiply(BigDecimal.TEN.pow(18)).toBigInteger() ;
-                    String transactionHash = liquichainTransaction.transfer(originWallet,paypalOrder.getToWallet(),amountInDemos);
-                    log.info("created transaction, transactionHash={}",transactionHash);
+                    BigInteger amountInDemos = (new BigDecimal(paypalOrder.getToAmount())).multiply(
+                            BigDecimal.TEN.pow(18)).toBigInteger();
+                    String transactionHash = liquichainTransaction
+                            .transferSmartContract(ORIGIN_WALLET, paypalOrder.getToWallet(),
+                                    amountInDemos, "topup", "Paypal topup",
+                                    "You received your paypal topup!");
+                    LOG.info("created transaction, transactionHash={}", transactionHash);
                     paypalOrder.setStatus("OK");
-                  	try {
-        		   		crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-               		} catch(Exception ex){
-                  		ex.printStackTrace();
-                	}
+                    try {
+                        crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                     result = "Success";
                     result = createResponse(orderId, null);
-                } catch(Exception e){
-                    log.error("Paypal ok but transaction ko:{}",order);
-                    message = "Transaction error:"+e.getMessage();
-                	paypalOrder.setStatus("ALERT");
-                	paypalOrder.setError(message);
-                	try{
-        				crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                	} catch (Exception ex){
-                    	e.printStackTrace();
-                	}
-                	result = createErrorResponse(orderId, "406", message);
+                } catch (Exception e) {
+                    LOG.error("Paypal ok but transaction ko: {}", order);
+                    message = "Transaction error:" + e.getMessage();
+                    paypalOrder.setStatus("ALERT");
+                    paypalOrder.setError(message);
+                    try {
+                        crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
+                    } catch (Exception ex) {
+                        e.printStackTrace();
+                    }
+                    result = createErrorResponse(orderId, "406", message);
                 }
 
             } else {
-                message = "Capture failed:"+order.status();
+                message = "Capture failed:" + order.status();
                 paypalOrder.setStatus("KO");
                 paypalOrder.setError(message);
-                try{
-        			crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                } catch (Exception e){
+                try {
+                    crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 result = createErrorResponse(orderId, "406", message);
             }
         }
-
     }
 
-    private String createResponse(String requestId, Order order) {
-        String res = "{\n";
-        res += "  \"id\": \"" + requestId + "\",\n";
-        res += "  \"status\": \"" + 200 + "\",\n";
-       // res += "  \"jsonrpc\": \"2.0\",\n";
-        if (order != null) {
-            try {
-                res += "  \"result\": " + new ObjectMapper().writeValueAsString(order) + "\n";
-            } catch (JsonProcessingException jpe) {
-                // used error code from https://github.com/claudijo/json-rpc-error
-                return createErrorResponse(requestId, "-32700", jpe.getMessage());
-            }
-        } else {
-            res += "  \"message\": \"" + result + "\"\n";
+    public String createResponse(String orderId, Order order) {
+        String idFormat = orderId == null || NumberUtils.isParsable(orderId)
+                ? "  \"id\": %s,"
+                : "  \"id\": \"%s\",";
+        String orderJson = null;
+        try {
+            orderJson = new ObjectMapper().writeValueAsString(order);
+        } catch (JsonProcessingException e) {
+            // used error code from https://github.com/claudijo/json-rpc-error
+            return createErrorResponse(orderId, "-32700", e.getMessage());
         }
-        res += "}";
-        // log.info("res:{}", res);
-        return res;
 
+        String response = new StringBuilder()
+                .append("{\n")
+                .append(String.format(idFormat, orderId)).append("\n")
+                .append("  \"status\": \"200\",\n")
+                .append("  \"result\": ").append(orderJson).append("\n")
+                .append("}").toString();
+        LOG.debug("response: {}", response);
+        return response;
     }
 
-    private String createErrorResponse(String requestId, String errorCode, String message) {
-        String res = "{\n";
-        if (requestId != null) {
-            res += "  \"id\": \""  + requestId + "\",\n";
-        }
-        res += "  \"status\": \"" + errorCode + "\",\n";
-        res += "  \"message\": \"" + message + "\"\n";
-        res += "}";
-        log.info("err:{}", res);
-        return res;
+    public String createErrorResponse(String orderId, String errorCode, String message) {
+        String idFormat = orderId == null || NumberUtils.isParsable(orderId)
+                ? "  \"id\": %s,"
+                : "  \"id\": \"%s\",";
+        String response = new StringBuilder()
+                .append("{\n")
+                .append(String.format(idFormat, orderId)).append("\n")
+                .append("  \"status\": \"").append(errorCode).append("\",\n")
+                .append("  \"message\": \"").append(message).append("\",\n")
+                .append("}").toString();
+        LOG.debug("error response: {}", response);
+        return response;
     }
-
-}
-
-class PaypalSandboxClient {
-    static String clientId = "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3";
-    static String secret = "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_";
-
-    private static PayPalEnvironment environment = new PayPalEnvironment.Sandbox(clientId, secret);
-    static PayPalHttpClient client = new PayPalHttpClient(environment);
-}
-
-class PaypalLiveClient {
-    static String clientId = "PRODUCTION-CLIENT-ID";
-    static String secret = "PRODUCTION-CLIENT-SECRET";
-    private static PayPalEnvironment environment = new PayPalEnvironment.Live(clientId, secret);
-    static PayPalHttpClient client = new PayPalHttpClient(environment);
 }
 
 class OrderItem {
@@ -268,34 +250,41 @@ class OrderItem {
     }
 }
 
-class OrderService {
-    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
-    private PayPalHttpClient client = null;
+class OrderService extends Script {
+    private static final Logger LOG = LoggerFactory.getLogger(OrderService.class);
+    private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
+    private final ParamBean config = paramBeanFactory.getInstance();
+
+    private final String PAYMENT_MODE = config.getProperty("payment.mode", "PRODUCTION");
+    private final String SANDBOX_CLIENT_ID = config
+            .getProperty("payment.sandbox.client.id",
+                    "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
+    private final String SANDBOX_CLIENT_SECRET = config
+            .getProperty("payment.sandbox.client.secret",
+                    "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
+    private final String LIVE_CLIENT_ID = config
+            .getProperty("payment.live.client.id",
+                    "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
+    private final String LIVE_CLIENT_SECRET = config
+            .getProperty("payment.live.client.secret",
+                    "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
+
+    private PayPalEnvironment environment = null;
+
+    private final PayPalHttpClient client = new PayPalHttpClient(environment);
     private boolean debug = false;
 
     public OrderService() {
-        this.client = PaypalSandboxClient.client;
-        this.debug = true;
-    }
-
-    public OrderService(String type) {
-        if ("PRODUCTION".equals(type)) {
-            this.client = PaypalLiveClient.client;
+        boolean isDevMode = "DEVELOPMENT".equals(PAYMENT_MODE);
+        this.debug = isDevMode;
+        if (isDevMode) {
+            environment = new PayPalEnvironment.Sandbox(SANDBOX_CLIENT_ID, SANDBOX_CLIENT_SECRET);
         } else {
-            this.client = PaypalSandboxClient.client;
-            this.debug = true;
+            environment = new PayPalEnvironment.Live(LIVE_CLIENT_ID, LIVE_CLIENT_SECRET);
         }
     }
 
-    public PayPalHttpClient getClient() {
-        return client;
-    }
-
-    public void setClient(PayPalHttpClient client) {
-        this.client = client;
-    }
-
-    public Order createOrder(List<OrderItem> orderItems, String returnUrl) {
+    public Order createOrder(List<OrderItem> orderItems, String RETURN_URL) {
         Order order = null;
         boolean hasOrderItems = orderItems != null && !orderItems.isEmpty();
         if (hasOrderItems) {
@@ -304,14 +293,18 @@ class OrderService {
 
             List<PurchaseUnitRequest> purchaseUnits = new ArrayList<>();
 
-            orderItems.stream().forEach((item) -> purchaseUnits.add(new PurchaseUnitRequest()
-                    .amountWithBreakdown(new AmountWithBreakdown().currencyCode(item.getCurrencyCode()).value(item.getValue()))));
-
+            orderItems.stream()
+                    .forEach((item) -> purchaseUnits
+                            .add(new PurchaseUnitRequest()
+                                    .amountWithBreakdown(
+                                            new AmountWithBreakdown()
+                                                    .currencyCode(item.getCurrencyCode())
+                                                    .value(item.getValue()))));
             orderRequest.purchaseUnits(purchaseUnits);
 
             ApplicationContext appContext = new ApplicationContext();
-            appContext.returnUrl(returnUrl);
-            appContext.cancelUrl(returnUrl);
+            appContext.returnUrl(RETURN_URL);
+            appContext.cancelUrl(RETURN_URL);
             orderRequest.applicationContext(appContext);
 
             OrdersCreateRequest request = new OrdersCreateRequest().requestBody(orderRequest);
@@ -322,19 +315,21 @@ class OrderService {
                 order = response.result();
 
                 if (this.debug) {
-                    logger.debug("Order ID: " + order.id());
-                    order.links().forEach(link -> logger.debug(link.rel() + " => " + link.method() + ":" + link.href()));
+                    LOG.debug("Order ID: " + order.id());
+                    order.links()
+                            .forEach(link -> LOG.debug(
+                                    link.rel() + " => " + link.method() + ":" + link.href()));
                 }
 
             } catch (IOException ioe) {
                 if (ioe instanceof HttpException) {
-                    logger.error("Failed to create order.", ioe);
+                    LOG.error("Failed to create order.", ioe);
                 } else {
-                    logger.error("Unknown error while creating order.", ioe);
+                    LOG.error("Unknown error while creating order.", ioe);
                 }
             }
         } else {
-            logger.warn("No order details provided, will not process creation of order.");
+            LOG.warn("No order details provided, will not process creation of order.");
         }
         return order;
     }
@@ -349,26 +344,26 @@ class OrderService {
             order = response.result();
 
             if (this.debug) {
-                logger.debug("Status Code: " + response.statusCode());
-                logger.debug("Status: " + order.status());
-                logger.debug("Order ID: " + order.id());
-                logger.debug("Links: ");
+                LOG.debug("Status Code: " + response.statusCode());
+                LOG.debug("Status: " + order.status());
+                LOG.debug("Order ID: " + order.id());
+                LOG.debug("Links: ");
                 for (LinkDescription link : order.links()) {
-                    logger.debug("\t" + link.rel() + ": " + link.href());
+                    LOG.debug("\t" + link.rel() + ": " + link.href());
                 }
-                logger.debug("Capture ids:");
+                LOG.debug("Capture ids:");
                 for (PurchaseUnit purchaseUnit : order.purchaseUnits()) {
                     for (Capture capture : purchaseUnit.payments().captures()) {
-                        logger.debug("\t" + capture.id());
+                        LOG.debug("\t" + capture.id());
                     }
                 }
             }
 
         } catch (IOException ioe) {
             if (ioe instanceof HttpException) {
-                logger.error("Failed to capture order.", ioe);
+                LOG.error("Failed to capture order.", ioe);
             } else {
-                logger.error("Unknown error while capturing order.", ioe);
+                LOG.error("Unknown error while capturing order.", ioe);
             }
         }
         return order;

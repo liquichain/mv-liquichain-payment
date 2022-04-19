@@ -1,5 +1,5 @@
 {
-  "code" : "LIQUICHAIN_PAYMENT",
+  "code" : "mv-liquichain-payment",
   "description" : "Liquichain Payment gateway",
   "license" : "GPL",
   "currentVersion" : "0.7",
