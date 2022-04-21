@@ -229,6 +229,7 @@ public class LiquichainPaymentScript extends EndpointScript {
     }
 }
 
+
 class OrderItem {
     private String currencyCode;
     private String value;
@@ -249,6 +250,7 @@ class OrderItem {
         this.value = value;
     }
 }
+
 
 class OrderService extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(OrderService.class);
@@ -271,7 +273,7 @@ class OrderService extends Script {
 
     private PayPalEnvironment environment = null;
 
-    private final PayPalHttpClient client = new PayPalHttpClient(environment);
+    private PayPalHttpClient client = null;
     private boolean debug = false;
 
     public OrderService() {
@@ -282,6 +284,7 @@ class OrderService extends Script {
         } else {
             environment = new PayPalEnvironment.Live(LIVE_CLIENT_ID, LIVE_CLIENT_SECRET);
         }
+        this.client = new PayPalHttpClient(environment);
     }
 
     public Order createOrder(List<OrderItem> orderItems, String RETURN_URL) {
