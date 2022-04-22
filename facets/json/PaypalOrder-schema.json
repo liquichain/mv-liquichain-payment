@@ -6,6 +6,17 @@
     "title": "Paypal order",
     "type": "object",
     "properties": {
+        "orderId": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "OrderId",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_orderId",
+            "title": "PaypalOrder.orderId",
+            "type": "string",
+            "maxLength": 255
+        },
         "toAmount": {
             "storages": ["SQL"],
             "nullable": false,
