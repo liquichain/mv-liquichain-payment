@@ -30,6 +30,9 @@ public class PaypalOrder implements CustomEntity {
     private String fromWallet;
 
     @JsonProperty(required = true)
+    private String fromAmount;
+
+    @JsonProperty(required = true)
     private String toAmount;
 
     @JsonProperty(required = true)
@@ -84,6 +87,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setFromWallet(String fromWallet) {
         this.fromWallet = fromWallet;
+    }
+
+    public String getFromAmount() {
+        return fromAmount;
+    }
+
+    public void setFromAmount(String fromAmount) {
+        this.fromAmount = fromAmount;
     }
 
     public String getToAmount() {
