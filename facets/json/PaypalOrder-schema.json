@@ -17,6 +17,18 @@
             "type": "string",
             "maxLength": 255
         },
+        "toCurrency": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to currency",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toCurrency",
+            "title": "PaypalOrder.toCurrency",
+            "type": "string",
+            "maxLength": 5
+        },
         "fromWallet": {
             "storages": ["SQL"],
             "nullable": false,
@@ -94,6 +106,7 @@
         "creationDate",
         "fromCurrency",
         "fromWallet",
-        "toAmount"
+        "toAmount",
+        "toCurrency"
     ]
 }
