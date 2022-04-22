@@ -21,6 +21,8 @@ public class PaypalOrder implements CustomEntity {
     @JsonIgnore()
     private DBStorageType storages;
 
+    private String orderId;
+
     @JsonProperty(required = true)
     private String toAmount;
 
@@ -49,6 +51,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setStorages(DBStorageType storages) {
         this.storages = storages;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public String getToAmount() {
