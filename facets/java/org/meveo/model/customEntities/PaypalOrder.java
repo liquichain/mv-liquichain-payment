@@ -24,6 +24,9 @@ public class PaypalOrder implements CustomEntity {
     private String orderId;
 
     @JsonProperty(required = true)
+    private String toCurrency;
+
+    @JsonProperty(required = true)
     private String fromWallet;
 
     @JsonProperty(required = true)
@@ -62,6 +65,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setOrderId(String orderId) {
         this.orderId = orderId;
+    }
+
+    public String getToCurrency() {
+        return toCurrency;
+    }
+
+    public void setToCurrency(String toCurrency) {
+        this.toCurrency = toCurrency;
     }
 
     public String getFromWallet() {
