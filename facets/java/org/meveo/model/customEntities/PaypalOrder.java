@@ -42,6 +42,9 @@ public class PaypalOrder implements CustomEntity {
 
     private String status;
 
+    @JsonProperty(required = true)
+    private String toWallet;
+
     @Override()
     public String getUuid() {
         return uuid;
@@ -121,6 +124,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getToWallet() {
+        return toWallet;
+    }
+
+    public void setToWallet(String toWallet) {
+        this.toWallet = toWallet;
     }
 
     @Override()
