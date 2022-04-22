@@ -4,6 +4,7 @@ import org.meveo.model.CustomEntity;
 import java.util.List;
 import org.meveo.model.persistence.DBStorageType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class PaypalOrder implements CustomEntity {
@@ -22,6 +23,9 @@ public class PaypalOrder implements CustomEntity {
 
     @JsonProperty(required = true)
     private String toAmount;
+
+    @JsonProperty(required = true)
+    private Instant creationDate;
 
     private String error;
 
@@ -50,6 +54,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setToAmount(String toAmount) {
         this.toAmount = toAmount;
+    }
+
+    public Instant getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Instant creationDate) {
+        this.creationDate = creationDate;
     }
 
     public String getError() {
