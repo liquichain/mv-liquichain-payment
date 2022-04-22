@@ -25,6 +25,9 @@ public class PaypalOrder implements CustomEntity {
     private String toAmount;
 
     @JsonProperty(required = true)
+    private String fromCurrency;
+
+    @JsonProperty(required = true)
     private Instant creationDate;
 
     private String error;
@@ -54,6 +57,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setToAmount(String toAmount) {
         this.toAmount = toAmount;
+    }
+
+    public String getFromCurrency() {
+        return fromCurrency;
+    }
+
+    public void setFromCurrency(String fromCurrency) {
+        this.fromCurrency = fromCurrency;
     }
 
     public Instant getCreationDate() {
