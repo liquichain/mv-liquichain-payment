@@ -5,19 +5,31 @@
     "id": "PaypalOrder",
     "title": "Paypal order",
     "type": "object",
-    "properties": {"status": {
-        "storages": ["SQL"],
-        "nullable": true,
-        "description": "status (CREATED,OK,KO,ALERT)",
-        "readOnly": false,
-        "versionable": false,
-        "id": "CE_PaypalOrder_status",
-        "title": "PaypalOrder.status",
-        "enum": [
-            "CREATED",
-            "KO",
-            "ALERT",
-            "OK"
-        ]
-    }}
+    "properties": {
+        "error": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Error",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_PaypalOrder_error",
+            "title": "PaypalOrder.error",
+            "type": "string"
+        },
+        "status": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "status (CREATED,OK,KO,ALERT)",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_PaypalOrder_status",
+            "title": "PaypalOrder.status",
+            "enum": [
+                "CREATED",
+                "KO",
+                "ALERT",
+                "OK"
+            ]
+        }
+    }
 }
