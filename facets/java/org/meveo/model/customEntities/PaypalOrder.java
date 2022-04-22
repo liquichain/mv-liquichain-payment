@@ -3,6 +3,7 @@ package org.meveo.model.customEntities;
 import org.meveo.model.CustomEntity;
 import java.util.List;
 import org.meveo.model.persistence.DBStorageType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class PaypalOrder implements CustomEntity {
@@ -18,6 +19,9 @@ public class PaypalOrder implements CustomEntity {
 
     @JsonIgnore()
     private DBStorageType storages;
+
+    @JsonProperty(required = true)
+    private String toAmount;
 
     private String error;
 
@@ -38,6 +42,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setStorages(DBStorageType storages) {
         this.storages = storages;
+    }
+
+    public String getToAmount() {
+        return toAmount;
+    }
+
+    public void setToAmount(String toAmount) {
+        this.toAmount = toAmount;
     }
 
     public String getError() {
