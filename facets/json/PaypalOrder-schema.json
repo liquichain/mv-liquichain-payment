@@ -6,6 +6,18 @@
     "title": "Paypal order",
     "type": "object",
     "properties": {
+        "toAmount": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to amount",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toAmount",
+            "title": "PaypalOrder.toAmount",
+            "type": "string",
+            "maxLength": 50
+        },
         "error": {
             "storages": ["SQL"],
             "nullable": true,
@@ -31,5 +43,6 @@
                 "OK"
             ]
         }
-    }
+    },
+    "required": ["toAmount"]
 }
