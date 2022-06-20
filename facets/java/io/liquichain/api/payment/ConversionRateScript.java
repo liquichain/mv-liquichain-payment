@@ -1,7 +1,9 @@
 package io.liquichain.api.payment;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.meveo.service.script.Script;
@@ -15,7 +17,7 @@ public class ConversionRateScript extends Script {
         return result;
     }
 
-    public static BigDecimal LCN_TO_EUR = (new BigDecimal("2000")).setScale(9, RoundingMode.HALF_UP);
+    public static BigDecimal LCN_TO_EUR = new BigDecimal("2000").setScale(9, RoundingMode.HALF_UP);
     public static BigDecimal EUR_TO_LCN = new BigDecimal("0.0005").setScale(9, RoundingMode.HALF_UP);
     public static BigDecimal KLUB_TO_EUR = new BigDecimal("1000").setScale(9, RoundingMode.HALF_UP);
     public static BigDecimal EUR_TO_KLUB = new BigDecimal("0.001").setScale(9, RoundingMode.HALF_UP);
@@ -23,6 +25,19 @@ public class ConversionRateScript extends Script {
     public static BigDecimal CFA_TO_EUR = new BigDecimal("0.0015").setScale(9, RoundingMode.HALF_UP);
     public static BigDecimal KLUB_TO_USD = new BigDecimal("1725.52").setScale(9, RoundingMode.HALF_UP);
     public static BigDecimal USD_TO_KLUB = new BigDecimal("0.0006").setScale(9, RoundingMode.HALF_UP);
+
+    public static final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>();
+
+    static {
+        CONVERSION_RATE.put("LCN_TO_EUR", LCN_TO_EUR);
+        CONVERSION_RATE.put("EUR_TO_LCN", EUR_TO_LCN);
+        CONVERSION_RATE.put("KLUB_TO_EUR", KLUB_TO_EUR);
+        CONVERSION_RATE.put("EUR_TO_KLUB", EUR_TO_KLUB);
+        CONVERSION_RATE.put("EUR_TO_CFA", EUR_TO_CFA);
+        CONVERSION_RATE.put("CFA_TO_EUR", CFA_TO_EUR);
+        CONVERSION_RATE.put("KLUB_TO_USD", KLUB_TO_USD);
+        CONVERSION_RATE.put("USD_TO_KLUB", USD_TO_KLUB);
+    }
 
 
     @Override
