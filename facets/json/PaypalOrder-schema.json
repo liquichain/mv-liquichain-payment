@@ -18,6 +18,17 @@
             "type": "string",
             "maxLength": 50
         },
+        "creationDate": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "format": "date-time",
+            "description": "creation date",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_creationDate",
+            "title": "PaypalOrder.creationDate",
+            "type": "string"
+        },
         "error": {
             "storages": ["SQL"],
             "nullable": true,
@@ -44,5 +55,8 @@
             ]
         }
     },
-    "required": ["toAmount"]
+    "required": [
+        "creationDate",
+        "toAmount"
+    ]
 }
