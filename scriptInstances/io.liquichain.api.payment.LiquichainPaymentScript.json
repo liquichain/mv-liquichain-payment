@@ -7,6 +7,9 @@
   "outputs" : [ {
     "name" : "result",
     "type" : "String"
+  }, {
+    "name" : "intendedLocales",
+    "type" : "List"
   } ],
   "generateOutputs" : false,
   "type" : "JAVA",
