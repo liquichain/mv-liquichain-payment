@@ -19,6 +19,8 @@ public class PaypalOrder implements CustomEntity {
     @JsonIgnore()
     private DBStorageType storages;
 
+    private String status;
+
     @Override()
     public String getUuid() {
         return uuid;
@@ -34,6 +36,14 @@ public class PaypalOrder implements CustomEntity {
 
     public void setStorages(DBStorageType storages) {
         this.storages = storages;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override()
