@@ -100,6 +100,18 @@
                 "ALERT",
                 "OK"
             ]
+        },
+        "toWallet": {
+            "storages": ["SQL"],
+            "nullable": false,
+            "minLength": 1,
+            "description": "to wallet",
+            "readOnly": true,
+            "versionable": false,
+            "id": "CE_PaypalOrder_toWallet",
+            "title": "PaypalOrder.toWallet",
+            "type": "string",
+            "maxLength": 40
         }
     },
     "required": [
@@ -107,6 +119,7 @@
         "fromCurrency",
         "fromWallet",
         "toAmount",
-        "toCurrency"
+        "toCurrency",
+        "toWallet"
     ]
 }
