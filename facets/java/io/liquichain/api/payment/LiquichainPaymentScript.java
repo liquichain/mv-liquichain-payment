@@ -1,7 +1,5 @@
 package io.liquichain.api.payment;
 
-import com.google.gson.Gson;
-
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.http.HttpResponse;
@@ -35,7 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class LiquichainPaymentScript extends EndpointScript {
-
     private static final Logger LOG = LoggerFactory.getLogger(LiquichainPaymentScript.class);
 
     private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
@@ -43,6 +40,7 @@ public class LiquichainPaymentScript extends EndpointScript {
     private final Repository defaultRepo = repositoryService.findDefaultRepository();
     private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
     private final ParamBean config = paramBeanFactory.getInstance();
+    private final ObjectMapper mapper =  new ObjectMapper();
 
     public final String ORIGIN_WALLET = "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623".toLowerCase();
     // config.getProperty("wallet.origin.account", "deE0d5bE78E1Db0B36d3C1F908f4165537217333");
@@ -83,7 +81,6 @@ public class LiquichainPaymentScript extends EndpointScript {
         }
 
         Order order = null;
-        Gson gson = new Gson();
         OrderService orderService = new OrderService();
 
         if (orderId == null || "0".equals(orderId)) {
@@ -114,14 +111,14 @@ public class LiquichainPaymentScript extends EndpointScript {
                         paypalOrder.setToAmount(to.get("amount").toString());
                         paypalOrder.setStatus("CREATED");
                         crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                        result = gson.toJson(order);
+                        result = mapper.writeValueAsString(order);
                         LOG.info("persisted paypalOrder, result order:{}", result);
                     } else {
                         LOG.error("Insufficient global balance");
                         result = createErrorResponse(null, "501", "Insufficient global balance");
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("Error creating order", e);
                     result = createErrorResponse(null, "-32700", e.getMessage());
                 }
             } else {
@@ -143,7 +140,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                     try {
                         crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        LOG.error("Failed to update paypalOrder", e);
                     }
                 }
                 result = createErrorResponse(orderId, "406", message);
@@ -160,8 +157,8 @@ public class LiquichainPaymentScript extends EndpointScript {
                     paypalOrder.setStatus("OK");
                     try {
                         crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    } catch (Exception e) {
+                        LOG.error("Failed to update paypalOrder", e);
                     }
                     result = "Success";
                     result = createResponse(orderId, null);
@@ -173,7 +170,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                     try {
                         crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
                     } catch (Exception ex) {
-                        e.printStackTrace();
+                        LOG.error("Failed to update paypalOrder", e);
                     }
                     result = createErrorResponse(orderId, "406", message);
                 }
@@ -185,7 +182,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                 try {
                     crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("Failed to update paypalOrder", e);
                 }
                 result = createErrorResponse(orderId, "406", message);
             }
@@ -198,7 +195,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                 : "  \"id\": \"%s\",";
         String orderJson = null;
         try {
-            orderJson = new ObjectMapper().writeValueAsString(order);
+            orderJson = mapper.writeValueAsString(order);
         } catch (JsonProcessingException e) {
             // used error code from https://github.com/claudijo/json-rpc-error
             return createErrorResponse(orderId, "-32700", e.getMessage());
