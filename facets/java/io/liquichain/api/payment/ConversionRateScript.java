@@ -19,13 +19,13 @@ public class ConversionRateScript extends Script {
 
     public static BigDecimal ONE = new BigDecimal(1);
     public static BigDecimal LCN_TO_EUR = new BigDecimal("2000").setScale(9, HALF_UP);
-    public static BigDecimal EUR_TO_LCN = ONE.divide(LCN_TO_EUR).setScale(9, HALF_UP);
+    public static BigDecimal EUR_TO_LCN = ONE.divide(LCN_TO_EUR, 9, HALF_UP);
     public static BigDecimal KLUB_TO_EUR = new BigDecimal("1000").setScale(9, HALF_UP);
-    public static BigDecimal EUR_TO_KLUB = ONE.divide(KLUB_TO_EUR) .setScale(9, HALF_UP);
+    public static BigDecimal EUR_TO_KLUB = ONE.divide(KLUB_TO_EUR, 9, HALF_UP);
     public static BigDecimal CFA_TO_EUR = new BigDecimal("0.0015").setScale(9, HALF_UP);
     public static BigDecimal EUR_TO_CFA = new BigDecimal("655.13").setScale(9, HALF_UP);
     public static BigDecimal KLUB_TO_USD = new BigDecimal("0.015").setScale(9, HALF_UP);
-    public static BigDecimal USD_TO_KLUB = ONE.divide(KLUB_TO_USD).setScale(9, HALF_UP);
+    public static BigDecimal USD_TO_KLUB = ONE.divide(KLUB_TO_USD, 9, HALF_UP);
 
     public static final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>();
 
