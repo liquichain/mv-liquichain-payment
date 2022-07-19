@@ -1,8 +1,8 @@
 package io.liquichain.api.payment;
 
+import static java.math.RoundingMode.*;
+
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,14 +17,15 @@ public class ConversionRateScript extends Script {
         return result;
     }
 
-    public static BigDecimal LCN_TO_EUR = new BigDecimal("2000").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal EUR_TO_LCN = new BigDecimal("0.0005").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal KLUB_TO_EUR = new BigDecimal("1000").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal EUR_TO_KLUB = new BigDecimal("0.001").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal EUR_TO_CFA = new BigDecimal("655.13").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal CFA_TO_EUR = new BigDecimal("0.0015").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal KLUB_TO_USD = new BigDecimal("1725.52").setScale(9, RoundingMode.HALF_UP);
-    public static BigDecimal USD_TO_KLUB = new BigDecimal("0.0006").setScale(9, RoundingMode.HALF_UP);
+    public static BigDecimal ONE = new BigDecimal(1);
+    public static BigDecimal LCN_TO_EUR = new BigDecimal("2000").setScale(9, HALF_UP);
+    public static BigDecimal EUR_TO_LCN = ONE.divide(LCN_TO_EUR, HALF_UP).setScale(9, HALF_UP);
+    public static BigDecimal KLUB_TO_EUR = new BigDecimal("1000").setScale(9, HALF_UP);
+    public static BigDecimal EUR_TO_KLUB = ONE.divide(KLUB_TO_EUR, HALF_UP) .setScale(9, HALF_UP);
+    public static BigDecimal CFA_TO_EUR = new BigDecimal("0.0015").setScale(9, HALF_UP);
+    public static BigDecimal EUR_TO_CFA = new BigDecimal("655.13").setScale(9, HALF_UP);
+    public static BigDecimal KLUB_TO_USD = new BigDecimal("0.015").setScale(9, HALF_UP);
+    public static BigDecimal USD_TO_KLUB = ONE.divide(KLUB_TO_USD, HALF_UP).setScale(9, HALF_UP);
 
     public static final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>();
 
@@ -38,7 +39,6 @@ public class ConversionRateScript extends Script {
         CONVERSION_RATE.put("KLUB_TO_USD", KLUB_TO_USD);
         CONVERSION_RATE.put("USD_TO_KLUB", USD_TO_KLUB);
     }
-
 
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
