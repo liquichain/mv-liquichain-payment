@@ -1,5 +1,6 @@
 package io.liquichain.api.payment;
 
+import com.google.gson.Gson;
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.http.HttpResponse;
@@ -41,6 +42,7 @@ public class LiquichainPaymentScript extends EndpointScript {
     private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
     private final ParamBean config = paramBeanFactory.getInstance();
     private final ObjectMapper mapper =  new ObjectMapper();
+    private final Gson gson = new Gson();
 
     public final String ORIGIN_WALLET = "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623".toLowerCase();
     // config.getProperty("wallet.origin.account", "deE0d5bE78E1Db0B36d3C1F908f4165537217333");
@@ -111,7 +113,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                         paypalOrder.setToAmount(to.get("amount").toString());
                         paypalOrder.setStatus("CREATED");
                         crossStorageApi.createOrUpdate(defaultRepo, paypalOrder);
-                        result = mapper.writeValueAsString(order);
+                        result = gson.toJson(order);
                         LOG.info("persisted paypalOrder, result order:{}", result);
                     } else {
                         LOG.error("Insufficient global balance");
