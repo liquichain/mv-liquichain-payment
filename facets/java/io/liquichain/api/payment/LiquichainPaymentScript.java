@@ -165,7 +165,7 @@ public class LiquichainPaymentScript extends EndpointScript {
                     result = "Success";
                     result = createResponse(orderId, null);
                 } catch (Exception e) {
-                    LOG.error("Paypal ok but transaction ko: {}", order);
+                    LOG.error("Paypal ok but transaction ko: {}", order, e);
                     message = "Transaction error:" + e.getMessage();
                     paypalOrder.setStatus("ALERT");
                     paypalOrder.setError(message);
