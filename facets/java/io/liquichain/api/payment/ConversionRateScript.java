@@ -1,6 +1,6 @@
 package io.liquichain.api.payment;
 
-import static java.math.RoundingMode.HALF_UP;
+import static java.math.RoundingMode.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
