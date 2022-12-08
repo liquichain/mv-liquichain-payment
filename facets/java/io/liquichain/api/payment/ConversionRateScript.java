@@ -20,7 +20,7 @@ public class ConversionRateScript extends Script {
     public static BigDecimal ONE = new BigDecimal(1);
     public static BigDecimal LCN_TO_EUR = new BigDecimal("2000").setScale(9, HALF_UP);
     public static BigDecimal EUR_TO_LCN = ONE.divide(LCN_TO_EUR, 9, HALF_UP);
-    public static BigDecimal KLUB_TO_EUR = new BigDecimal("1000").setScale(9, HALF_UP);
+    public static BigDecimal KLUB_TO_EUR = new BigDecimal("0.014").setScale(9, HALF_UP);
     public static BigDecimal EUR_TO_KLUB = ONE.divide(KLUB_TO_EUR, 9, HALF_UP);
     public static BigDecimal CFA_TO_EUR = new BigDecimal("0.0015").setScale(9, HALF_UP);
     public static BigDecimal EUR_TO_CFA = new BigDecimal("655.13").setScale(9, HALF_UP);
