@@ -53,13 +53,13 @@ Once a payment order has been created, follow the link to `approve` the payment 
 i.e. Go to `https://www.sandbox.paypal.com/checkoutnow?token=4HT32429HB5150832` then complete the payment through paypal.
 
 ## Capture the order
-Once the payment has been completed on the payment gateway the payment can be completed by calling the capture order api at:  **GET** `/rest/payment-capture/{order id}`
+Once the payment has been completed on the payment gateway the payment can be completed by calling the capture order api at:  **POST** `/rest/payment-capture/{order id}`
 
 In the sample response of the [Create payment order](#create_payment_order) section above, the `order id` is: `4HT32429HB5150832`
 
 **Sample Request**
 
-**GET** `http://localhost:8080/meveo/rest/payment-capture/4HT32429HB5150832`
+**POST** `http://localhost:8080/meveo/rest/payment-capture/4HT32429HB5150832`
 
 **Sample Response**
 ```json
