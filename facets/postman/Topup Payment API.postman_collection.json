@@ -70,7 +70,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": \"122.11\" },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 80000 },\r\n  \"toWallet\": \"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\r\n  \"fromWallet\": \"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
+					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": 300.0 },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 20000.0 },\r\n  \"account\": \"ac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
 				},
 				"url": {
 					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/payment",
