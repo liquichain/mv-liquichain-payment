@@ -11,8 +11,8 @@ This request is made via **POST** method to  `/rest/payment` with the following 
 **POST** `http://localhost:8080/meveo/rest/payment`
 ```json
 {
-  "from": { "currency": "EUR", "amount": "122.11" },
-  "to": { "currency": "CFA", "amount": 80000 },
+  "from": { "currency": "EUR", "amount": 300.0 },
+  "to": { "currency": "COIN", "amount": 20000.0 },
   "account": "ac08e612D1318BC9c0Aa671A1b90199bB12Bd876"
 }
 ```
