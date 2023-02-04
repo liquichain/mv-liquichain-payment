@@ -221,7 +221,7 @@ public class LiquichainPaymentScript extends EndpointScript {
             .append("{\n")
             .append(String.format(idFormat, orderId)).append("\n")
             .append("  \"status\": \"").append(errorCode).append("\",\n")
-            .append("  \"message\": \"").append(message).append("\",\n")
+            .append("  \"message\": \"").append(message).append("\"\n")
             .append("}").toString();
         LOG.debug("error response: {}", response);
         return response;

@@ -1,0 +1,31 @@
+{
+  "code" : "io.liquichain.rate.ExchangeRateProvider",
+  "description" : "provide exchange rate between currency, coins, tokens",
+  "inputs" : [ {
+    "name" : "fromCurrency",
+    "type" : "String"
+  }, {
+    "name" : "toCurrency",
+    "type" : "String"
+  }, {
+    "name" : "fromDate",
+    "type" : "String"
+  }, {
+    "name" : "toDate",
+    "type" : "String"
+  }, {
+    "name" : "maxValues",
+    "type" : "long"
+  } ],
+  "outputs" : [ {
+    "name" : "result",
+    "type" : "String"
+  } ],
+  "generateOutputs" : false,
+  "type" : "JAVA",
+  "transactionType" : "SAME",
+  "executionRoles" : [ ],
+  "sourcingRoles" : [ ],
+  "mavenDependencies" : [ ],
+  "importScriptInstances" : [ "io.liquichain.api.payment.ConversionRateScript" ]
+}

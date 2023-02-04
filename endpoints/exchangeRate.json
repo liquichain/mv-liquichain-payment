@@ -1,0 +1,50 @@
+{
+  "code" : "exchangeRate",
+  "description" : "provide historical exchange rate",
+  "secured" : false,
+  "checkPathParams" : true,
+  "serviceCode" : "io.liquichain.rate.ExchangeRateProvider",
+  "synchronous" : true,
+  "method" : "GET",
+  "parameterMappings" : [ {
+    "serviceParameter" : "fromDate",
+    "multivalued" : false,
+    "parameterName" : "from",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "toDate",
+    "multivalued" : false,
+    "parameterName" : "to",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "maxValues",
+    "multivalued" : false,
+    "parameterName" : "limit",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "fromDate",
+    "multivalued" : false,
+    "parameterName" : "from",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "toDate",
+    "multivalued" : false,
+    "parameterName" : "to",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "maxValues",
+    "multivalued" : false,
+    "parameterName" : "limit",
+    "valueRequired" : false
+  } ],
+  "pathParameters" : [ "fromCurrency", "toCurrency" ],
+  "roles" : [ ],
+  "returnedVariableName" : "result",
+  "serializeResult" : false,
+  "contentType" : "application/json",
+  "basePath" : "exchangeRate",
+  "path" : "/{fromCurrency}/{toCurrency}",
+  "pool" : {
+    "usePool" : false
+  }
+}
