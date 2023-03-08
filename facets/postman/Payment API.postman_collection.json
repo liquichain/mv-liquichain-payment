@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "6ec4c417-c3f3-4baf-bda2-3c18e469e135",
+		"name": "Payment API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30784"
+	},
+	"item": [
+		{
+			"name": "Create wallet 1",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"wallet_creation\",\n\t\"params\": [\n\t\t\"Wallet User\",\n\t\t\"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\",\n\t\t\"98bead3bdd48a5a1268baa1216ddf63a360d8981d2c868dd44e29516116294a5\",\n\t\t\"0x82e411783094046c73cac729efbf23d498721a22a3cad0c2a6d9a6a7edcae5f710c97cfa8c7c8dece8c925ca75abcf90da26c72c7880776fe889608ef9ba0bf71b\",\n\t\t\"{\\\"shippingAddress\\\":{\\\"email\\\":\\\"testwallet1@telecelplay.io\\\",\\\"phone\\\":\\\"+639991234567\\\",\\\"address\\\":\\\"Milo\\\",\\\"street\\\":\\\"Kaban\\\",\\\"zipCode\\\":\\\"39242\\\",\\\"city\\\":\\\"Ciney\\\",\\\"country\\\":\\\"Combo\\\"},\\\"coords\\\":null}\",\n\t\t\"{\\\"username\\\": \\\"walletuser\\\", \\\"password\\\": \\\"Pa$sw0rd\\\", \\\"emailAddress\\\":\\\"testwallet1@telecelplay.io\\\", \\\"phoneNumber\\\":\\\"+639991234567\\\"}\"\n\t]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/wallet_jsonrpc/",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"wallet_jsonrpc",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create wallet 2",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"jsonrpc\": \"2.0\",\n\t\"method\": \"wallet_creation\",\n\t\"params\": [\n\t\t\"Other User\",\n\t\t\"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\n\t\t\"154ba6f20ea8ce5c5dc0d1b76e95100473e61714101679d5d802982e1abf282e\",\n\t\t\"0xbd7ff37006f2e22774feff5c1cf3bf78ff1a6377cc930e183ac1d3067ce2a9b201188a37ab3dc17b3c0da7c6870eb409a4efaf36142e5eefc5f32d3733de67951b\",\n\t\t\"{\\\"shippingAddress\\\":{\\\"email\\\":\\\"otheruser1@telecelplay.io\\\",\\\"phone\\\":\\\"+639991357024\\\",\\\"address\\\":\\\"Milo\\\",\\\"street\\\":\\\"Kaban\\\",\\\"zipCode\\\":\\\"39242\\\",\\\"city\\\":\\\"Ciney\\\",\\\"country\\\":\\\"Combo\\\"},\\\"coords\\\":null}\",\n\t\t\"{\\\"username\\\": \\\"otheruser\\\", \\\"password\\\": \\\"Pa$sw0rd\\\", \\\"emailAddress\\\":\\\"otheruser1@telecelplay.io\\\", \\\"phoneNumber\\\":\\\"+639991357024\\\"}\"\n\t]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/wallet_jsonrpc/",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"wallet_jsonrpc",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create paypal order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"orderId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": \"122.11\" },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 80000 },\r\n  \"toWallet\": \"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\r\n  \"fromWallet\": \"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/payment",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"payment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Capture order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": \"122.11\" },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 80000 },\r\n  \"toWallet\": \"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\r\n  \"fromWallet\": \"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/payment-capture/{{orderId}}",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"payment-capture",
+						"{{orderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Wallet 1 Balance History",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": \"122.11\" },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 80000 },\r\n  \"toWallet\": \"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\r\n  \"fromWallet\": \"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/etherscan/api?action=balancehistory&address=0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"etherscan",
+						"api"
+					],
+					"query": [
+						{
+							"key": "action",
+							"value": "balancehistory"
+						},
+						{
+							"key": "address",
+							"value": "0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Wallet 2 Balance History",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"from\": { \"currency\": \"EUR\", \"amount\": \"122.11\" },\r\n  \"to\": { \"currency\": \"CFA\", \"amount\": 80000 },\r\n  \"toWallet\": \"0x7f199D803B2b2B8996110b927bD29739f7251D34\",\r\n  \"fromWallet\": \"0xac08e612D1318BC9c0Aa671A1b90199bB12Bd876\"\r\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{hostname}}:{{port}}/{{webContext}}/rest/etherscan/api?action=balancehistory&address=0x7f199D803B2b2B8996110b927bD29739f7251D34",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{webContext}}",
+						"rest",
+						"etherscan",
+						"api"
+					],
+					"query": [
+						{
+							"key": "action",
+							"value": "balancehistory"
+						},
+						{
+							"key": "address",
+							"value": "0x7f199D803B2b2B8996110b927bD29739f7251D34"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{meveo.password}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{meveo.user}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "orderId",
+			"value": ""
+		}
+	]
+}
