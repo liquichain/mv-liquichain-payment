@@ -74,17 +74,11 @@ const exchangeRateForm = (container) => {
 	const from = container.querySelector('#exchangeRate-from-param');
 	const to = container.querySelector('#exchangeRate-to-param');
 	const limit = container.querySelector('#exchangeRate-limit-param');
-	const from = container.querySelector('#exchangeRate-from-param');
-	const to = container.querySelector('#exchangeRate-to-param');
-	const limit = container.querySelector('#exchangeRate-limit-param');
 
 	container.querySelector('#exchangeRate-form button').onclick = () => {
 		const params = {
 			fromCurrency : fromCurrency.value !== "" ? fromCurrency.value : undefined,
 			toCurrency : toCurrency.value !== "" ? toCurrency.value : undefined,
-			from : from.value !== "" ? from.value : undefined,
-			to : to.value !== "" ? to.value : undefined,
-			limit : limit.value !== "" ? limit.value : undefined,
 			from : from.value !== "" ? from.value : undefined,
 			to : to.value !== "" ? to.value : undefined,
 			limit : limit.value !== "" ? limit.value : undefined
