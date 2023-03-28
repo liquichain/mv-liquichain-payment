@@ -52,7 +52,7 @@ public class LiquichainPaymentScript extends EndpointScript {
     private final String PAYMENT_WALLET = config
         .getProperty("payment.wallet", "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623");
     public final String ORIGIN_WALLET = PAYMENT_WALLET.toLowerCase();
-    private final String RETURN_URL = config.getProperty("payment.capture.url", "https://dev.telecelplay.io/");
+    private final String RETURN_URL = config.getProperty("payment.capture.url", "https://dev.jips.io/");
 
     private final LiquichainTransaction liquichainTransaction = new LiquichainTransaction();
     private String result;
