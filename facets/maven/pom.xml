@@ -47,6 +47,14 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.paypal.sdk</groupId>
+      <artifactId>checkout-sdk</artifactId>
+      <version>1.0.3</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
   <repositories>
     <repository>
       <id>maven central</id>
