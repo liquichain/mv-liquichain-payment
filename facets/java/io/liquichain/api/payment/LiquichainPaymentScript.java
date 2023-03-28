@@ -1,40 +1,42 @@
 package io.liquichain.api.payment;
 
-import static io.liquichain.api.payment.ConversionRateScript.*;
-import static java.math.RoundingMode.*;
+import static io.liquichain.api.payment.ConversionRateScript.CONVERSION_RATE;
+import static java.math.RoundingMode.HALF_EVEN;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.meveo.admin.exception.BusinessException;
+import org.meveo.api.persistence.CrossStorageApi;
+import org.meveo.api.rest.technicalservice.EndpointScript;
+import org.meveo.commons.utils.ParamBean;
+import org.meveo.commons.utils.ParamBeanFactory;
+import org.meveo.commons.utils.StringUtils;
+import org.meveo.model.customEntities.PaypalOrder;
+import org.meveo.model.customEntities.Wallet;
+import org.meveo.model.storage.Repository;
+import org.meveo.service.script.Script;
+import org.meveo.service.storage.RepositoryService;
+
+import io.liquichain.api.core.LiquichainTransaction;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.http.HttpResponse;
 import com.paypal.http.exceptions.HttpException;
 import com.paypal.orders.*;
-
-import java.util.*;
-import java.time.Instant;
-import java.math.BigInteger;
-import java.math.BigDecimal;
-import java.io.IOException;
-
-import org.meveo.commons.utils.ParamBean;
-import org.meveo.commons.utils.ParamBeanFactory;
-import org.meveo.commons.utils.StringUtils;
-import org.meveo.api.rest.technicalservice.EndpointScript;
-import org.meveo.admin.exception.BusinessException;
-import org.meveo.service.script.Script;
-import org.meveo.model.customEntities.Wallet;
-import org.meveo.model.customEntities.PaypalOrder;
-import org.meveo.model.storage.Repository;
-import org.meveo.service.storage.RepositoryService;
-import org.meveo.api.persistence.CrossStorageApi;
-
-import io.liquichain.api.core.LiquichainTransaction;
-
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.gson.Gson;
 
 public class LiquichainPaymentScript extends EndpointScript {
     private static final Logger LOG = LoggerFactory.getLogger(LiquichainPaymentScript.class);

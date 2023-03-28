@@ -8,9 +8,12 @@ import java.util.Map;
 
 import org.meveo.service.script.Script;
 import org.meveo.admin.exception.BusinessException;
+
 import org.json.*;
+
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +51,19 @@ public class ConversionRateScript extends Script {
     }
 
     static {
-      setRates();
+        setRates();
     }
-  
+
     static long nextRateUpdate = 0;
     static long rateExchangeQueryDelayInMs = 10000;
 
-    void downloadRates(){
-        if(System.currentTimeMillis()<nextRateUpdate){
+    void downloadRates() {
+        if (System.currentTimeMillis() < nextRateUpdate) {
             return;
         }
         Client client = ClientBuilder.newClient();
-        WebTarget webTarget  = client.target("https://api.exchangerate.host/latest?symbols=EUR,USD");
-        Invocation.Builder invocationBuilder  = webTarget.request(MediaType.APPLICATION_JSON);
+        WebTarget webTarget = client.target("https://api.exchangerate.host/latest?symbols=EUR,USD");
+        Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
         Response response = null;
         double EURtoUSD = 1.1;
         try {
@@ -70,11 +73,11 @@ public class ConversionRateScript extends Script {
             JSONObject json = new JSONObject(value);
             if (json.getBoolean("success")) {
                 double rate = json.getJSONObject("rates").getDouble("USD");
-                log.info("New EUR/USD rate : {}", rate);    
+                log.info("New EUR/USD rate : {}", rate);
                 EUR_TO_USD = new BigDecimal(rate).setScale(9, HALF_UP);
             }
             setRates();
-            nextRateUpdate=System.currentTimeMillis()+rateExchangeQueryDelayInMs;
+            nextRateUpdate = System.currentTimeMillis() + rateExchangeQueryDelayInMs;
         } catch (Exception ex) {
             log.warn("error while getting exchange rate :{}", ex.getMessage());
         }
@@ -84,14 +87,22 @@ public class ConversionRateScript extends Script {
     public void execute(Map<String, Object> parameters) throws BusinessException {
         downloadRates();
         result = "{\"data\":[\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"LCN\"},\"to\":{\"value\":" + CONVERSION_RATE.get("LCN_TO_EUR") + ",\"currency\":\"EUR\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_LCN") + ",\"currency\":\"LCN\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"KLUB\"},\"to\":{\"value\":" + CONVERSION_RATE.get("KLUB_TO_EUR") + ",\"currency\":\"EUR\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_KLUB") + ",\"currency\":\"KLUB\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"KLUB\"},\"to\":{\"value\":" + CONVERSION_RATE.get("KLUB_TO_USD") + ",\"currency\":\"USD\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"USD\"},\"to\":{\"value\":" + CONVERSION_RATE.get("USD_TO_KLUB") + ",\"currency\":\"KLUB\"}}\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_CFA") + ",\"currency\":\"CFA\"}},\n"
-            + "{\"from\":{\"value\":1,\"currency\":\"CFA\"},\"to\":{\"value\":" + CONVERSION_RATE.get("CFA_TO_EUR") + ",\"currency\":\"EUR\"}}\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"LCN\"},\"to\":{\"value\":" + CONVERSION_RATE.get("LCN_TO_EUR") +
+            ",\"currency\":\"EUR\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_LCN") +
+            ",\"currency\":\"LCN\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"KLUB\"},\"to\":{\"value\":" + CONVERSION_RATE.get("KLUB_TO_EUR") +
+            ",\"currency\":\"EUR\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_KLUB") +
+            ",\"currency\":\"KLUB\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"KLUB\"},\"to\":{\"value\":" + CONVERSION_RATE.get("KLUB_TO_USD") +
+            ",\"currency\":\"USD\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"USD\"},\"to\":{\"value\":" + CONVERSION_RATE.get("USD_TO_KLUB") +
+            ",\"currency\":\"KLUB\"}}\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_CFA") +
+            ",\"currency\":\"CFA\"}},\n"
+            + "{\"from\":{\"value\":1,\"currency\":\"CFA\"},\"to\":{\"value\":" + CONVERSION_RATE.get("CFA_TO_EUR") +
+            ",\"currency\":\"EUR\"}}\n"
             + "],\n"
             + "\"timestamp\":" + System.currentTimeMillis() + "\n"
             + "}";
