@@ -98,7 +98,7 @@ public class ConversionRateScript extends Script {
             + "{\"from\":{\"value\":1,\"currency\":\"KLUB\"},\"to\":{\"value\":" + CONVERSION_RATE.get("KLUB_TO_USD") +
             ",\"currency\":\"USD\"}},\n"
             + "{\"from\":{\"value\":1,\"currency\":\"USD\"},\"to\":{\"value\":" + CONVERSION_RATE.get("USD_TO_KLUB") +
-            ",\"currency\":\"KLUB\"}}\n"
+            ",\"currency\":\"KLUB\"}},\n"
             + "{\"from\":{\"value\":1,\"currency\":\"EUR\"},\"to\":{\"value\":" + CONVERSION_RATE.get("EUR_TO_CFA") +
             ",\"currency\":\"CFA\"}},\n"
             + "{\"from\":{\"value\":1,\"currency\":\"CFA\"},\"to\":{\"value\":" + CONVERSION_RATE.get("CFA_TO_EUR") +
