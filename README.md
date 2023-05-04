@@ -1,6 +1,53 @@
 # Liquichain Payment
 This module provides functionality for liquichain to receive payment from payment gateways like Paypal
 
+## Currency conversion
+This request is made via **GET** method to  `/rest/currconv`
+
+### Sample Request
+**GET** `http://localhost:8080/meveo/rest/payment`
+
+### Sample Response
+```json
+{
+    "data": [
+        {
+          "from": {"value": 1,"currency": "LCN"},
+          "to": {"value": 2000.000000000,"currency": "EUR"}
+        },
+        {
+          "from": {"value": 1,"currency": "EUR"},
+          "to": {"value": 0.000500000,"currency": "LCN"}
+        },
+        {
+          "from": {"value": 1,"currency": "KLUB"},
+          "to": {"value": 0.013544544,"currency": "EUR"}
+        },
+        {
+          "from": {"value": 1,"currency": "EUR"},
+          "to": {"value": 73.830466667,"currency": "KLUB"}
+        },
+        {
+          "from": {"value": 1,"currency": "KLUB"},
+          "to": {"value": 0.015000000,"currency": "USD"}
+        },
+        {
+          "from": {"value": 1,"currency": "USD"},
+          "to": {"value": 66.666666667,"currency": "KLUB"}
+        },
+        {
+          "from": {"value": 1,"currency": "EUR"},
+          "to": {"value": 66.666666666666666666666667,"currency": "CFA"}
+        },
+        {
+          "from": {"value": 1,"currency": "CFA"},
+          "to": {"value": 0.015000000000000000000000,"currency": "EUR"}
+        }
+    ],
+    "timestamp": 1683164416379
+}
+```
+
 ## Create a payment order
 This request is made via **POST** method to  `/rest/payment` with the following parameters:
 - `from` (required): an object with the `currency` and `amount` of the payment that will be paid 
