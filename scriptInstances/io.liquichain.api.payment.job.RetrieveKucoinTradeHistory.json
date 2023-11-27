@@ -1,0 +1,13 @@
+{
+  "code" : "io.liquichain.api.payment.job.RetrieveKucoinTradeHistory",
+  "description" : "Retrieve trade history from kucoin API",
+  "inputs" : [ ],
+  "outputs" : [ ],
+  "generateOutputs" : false,
+  "type" : "JAVA",
+  "transactionType" : "SAME",
+  "executionRoles" : [ ],
+  "sourcingRoles" : [ ],
+  "mavenDependencies" : [ ],
+  "importScriptInstances" : [ ]
+}
