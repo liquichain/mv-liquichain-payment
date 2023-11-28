@@ -171,7 +171,7 @@ public class RetrieveKucoinTradeHistory extends Script {
             Client client = ClientBuilder.newClient();
             WebTarget webTarget = client.target(EXCHANGE_RATE_URL);
             Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
-            LOG.debug("Exchange rate response: {}", response);
+            LOG.info("Exchange rate response: {}", response);
 
             if (response == null || response.getStatus() != 200) {
                 return null;
