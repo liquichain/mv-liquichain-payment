@@ -17,6 +17,17 @@
             "type": "string",
             "maxLength": 4
         },
+        "priceEuro": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Price (EUR)",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_priceEuro",
+            "title": "TradeHistory.priceEuro",
+            "type": "string",
+            "maxLength": 64
+        },
         "size": {
             "storages": ["SQL"],
             "nullable": true,
@@ -26,18 +37,18 @@
             "id": "CE_TradeHistory_size",
             "title": "TradeHistory.size",
             "type": "string",
-            "maxLength": 24
+            "maxLength": 64
         },
         "price": {
             "storages": ["SQL"],
             "nullable": true,
-            "description": "Price",
+            "description": "Price (USD)",
             "readOnly": false,
             "versionable": false,
             "id": "CE_TradeHistory_price",
             "title": "TradeHistory.price",
             "type": "string",
-            "maxLength": 24
+            "maxLength": 64
         },
         "time": {
             "storages": ["SQL"],

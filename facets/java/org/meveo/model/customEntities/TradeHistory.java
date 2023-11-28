@@ -23,6 +23,8 @@ public class TradeHistory implements CustomEntity, Serializable {
 
     private String side;
 
+    private String priceEuro;
+
     private String size;
 
     private String price;
@@ -52,6 +54,14 @@ public class TradeHistory implements CustomEntity, Serializable {
 
     public void setSide(String side) {
         this.side = side;
+    }
+
+    public String getPriceEuro() {
+        return priceEuro;
+    }
+
+    public void setPriceEuro(String priceEuro) {
+        this.priceEuro = priceEuro;
     }
 
     public String getSize() {
