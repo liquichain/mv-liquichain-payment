@@ -25,7 +25,7 @@ import org.web3j.utils.Numeric;
 
 public class RetrieveKucoinTradeHistory extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(RetrieveKucoinTradeHistory.class);
-    private static final String BASE_URL = "https://api.kucoin.com/api/v2";
+    private static final String BASE_URL = "https://api.kucoin.com/api/v1";
     private static final String ENDPOINT = "/market/histories?symbol=KLUB";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -46,15 +46,14 @@ public class RetrieveKucoinTradeHistory extends Script {
             WebTarget webTarget = client.target(url);
             String now = String.valueOf(Instant.now().toEpochMilli());
 
-            Invocation.Builder invocationBuilder = webTarget
+            Response response = webTarget
                     .request(MediaType.APPLICATION_JSON)
                     .header("Content-Type", "application/json")
                     .header("KC-API-KEY", apiKey)
                     .header("KC-API-SIGN", generateSignature(now))
                     .header("KC-API-TIMESTAMP", now)
-                    .header("KC-API-PASSPHRASE", apiPassphrase);
-
-            Response response = invocationBuilder.get();
+                    .header("KC-API-PASSPHRASE", apiPassphrase)
+                    .get();
 
             if (response.getStatus() == 200) {
                 String responseData = response.readEntity(String.class);
