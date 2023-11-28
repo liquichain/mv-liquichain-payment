@@ -1,11 +1,17 @@
 package io.liquichain.api.payment.job;
 
+import static java.math.RoundingMode.HALF_UP;
+
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,9 +37,11 @@ import org.web3j.utils.Numeric;
 public class RetrieveKucoinTradeHistory extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(RetrieveKucoinTradeHistory.class);
     private static final String BASE_URL = "https://api.kucoin.com/api/v1";
+    private static final String EXCHANGE_RATE_URL = "https://api.exchangerate.host/latest?symbols=EUR,USD";
     private static final String ENDPOINT = "/market/histories?symbol=KLUB-USDT";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final KlubToUSD klubToUSD = KlubToUSD.getInstance();
 
     private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
     private final RepositoryService repositoryService = getCDIBean(RepositoryService.class);
@@ -44,6 +52,10 @@ public class RetrieveKucoinTradeHistory extends Script {
     private final String apiKey = config.getProperty("kucoin.api.key", "");
     private final String apiSecret = config.getProperty("kucoin.api.secret", "");
     private final String apiPassphrase = config.getProperty("kucoin.api.passphrase", "");
+
+    public static BigDecimal retrieveKlubToUSDRate() {
+        return new BigDecimal(klubToUSD.getRate()).setScale(9, HALF_UP);
+    }
 
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
@@ -71,8 +83,22 @@ public class RetrieveKucoinTradeHistory extends Script {
                 throw new RuntimeException("Data retrieval failed. HTTP error code: {}" + response.getStatus());
             }
 
+            updateCachedRate();
+
         } catch (Exception e) {
             throw new BusinessException("Failed to retrieve trade history from kucoin.", e);
+        }
+    }
+
+    private void updateCachedRate() {
+        try {
+            TradeHistory latestHistory = crossStorageApi.find(defaultRepo, TradeHistory.class)
+                                                        .orderBy("time", false)
+                                                        .limit(1)
+                                                        .getResult();
+            klubToUSD.updateRate(latestHistory.getPrice());
+        } catch (Exception e) {
+            LOG.error("Failed to retrieve latest trade history.", e);
         }
     }
 
@@ -94,27 +120,76 @@ public class RetrieveKucoinTradeHistory extends Script {
 
         List<Map<String, Object>> tradeHistoryList = convert(responseMap.get("data"));
 
-        tradeHistoryList.forEach(item -> {
+        if (tradeHistoryList == null) {
+            throw new RuntimeException("Trade history list data was empty.");
+        }
+
+        BigDecimal exchangeRate = retrieveExchangeRate();
+        BigDecimal eurToUsd = exchangeRate == null ? parseDecimal("1.1") : exchangeRate;
+
+        tradeHistoryList.sort(Comparator.comparing(item -> String.valueOf(item.get("sequence"))));
+
+        BigDecimal previousPrice = BigDecimal.ZERO;
+        for (Map<String, Object> item : tradeHistoryList) {
             String sequence = "" + item.get("sequence");
             String price = "" + item.get("price");
+            BigDecimal currentPrice = parseDecimal(price);
+            String priceEuro = String.valueOf(parseInverse(currentPrice.multiply(eurToUsd).setScale(9, HALF_UP)));
             String size = "" + item.get("size");
             String side = "" + item.get("side");
             Instant time = Instant.ofEpochMilli(((Long) item.get("time")) / 1000000);
 
+            Double percentChange = currentPrice.subtract(previousPrice)
+                                               .divide(previousPrice, 9, HALF_UP)
+                                               .multiply(parseDecimal("100"))
+                                               .doubleValue();
+
             TradeHistory tradeHistory = new TradeHistory();
             tradeHistory.setUuid(sequence);
             tradeHistory.setPrice(price);
+            tradeHistory.setPriceEuro(priceEuro);
+            tradeHistory.setPercentChange(percentChange);
             tradeHistory.setSize(size);
             tradeHistory.setSide(side);
             tradeHistory.setTime(time);
 
             try {
-                crossStorageApi.createOrUpdate(tradeHistory);
-            } catch (Exception e){
+                crossStorageApi.createOrUpdate(defaultRepo, tradeHistory);
+            } catch (Exception e) {
                 LOG.error("Failed to save trade history: {}", toJson(item), e);
             }
-        });
+            previousPrice = parseDecimal(price);
+        }
+    }
 
+    public static BigDecimal retrieveExchangeRate() {
+        try {
+            Client client = ClientBuilder.newClient();
+            WebTarget webTarget = client.target(EXCHANGE_RATE_URL);
+            Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
+            LOG.debug("Exchange rate response: {}", response);
+
+            if (response == null || response.getStatus() != 200) {
+                return null;
+            }
+            String responseData = response.readEntity(String.class);
+
+            Map<String, Object> responseMap = convert(responseData);
+            if (responseMap == null) {
+                throw new RuntimeException("Failed to map response data.");
+            }
+            Boolean success = convert(responseMap.get("success"));
+            if (!Boolean.TRUE.equals(success)) {
+                throw new RuntimeException("Response status: " + success);
+            }
+            Map<String, Double> rates = convert(responseMap.get("rates"));
+            if (rates == null) {
+                throw new RuntimeException("Rates received was empty");
+            }
+            return parseDecimal(rates.get("USD"));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve exchange rate.", e);
+        }
     }
 
     private String generateSignature(String timestamp) {
@@ -135,36 +210,69 @@ public class RetrieveKucoinTradeHistory extends Script {
         }
     }
 
-    public static String toJson(Object data) {
-        String json = null;
+    private static String toJson(Object data) {
         try {
-            json = OBJECT_MAPPER.writeValueAsString(data);
+            return OBJECT_MAPPER.writeValueAsString(data);
         } catch (Exception e) {
             LOG.error("Failed to convert to json: {}", data, e);
         }
-        return json;
+        return null;
     }
 
-    public static <T> T convert(String data) {
-        T value = null;
+    private static <T> T convert(String data) {
         try {
-            value = OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
+            return OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
             });
         } catch (Exception e) {
             LOG.error("Failed to parse data: {}", data, e);
         }
-        return value;
+        return null;
     }
 
-    public static <T> T convert(Object data) {
-        T value = null;
+    private static <T> T convert(Object data) {
         try {
-            value = OBJECT_MAPPER.convertValue(data, new TypeReference<T>() {
+            return OBJECT_MAPPER.convertValue(data, new TypeReference<T>() {
             });
         } catch (Exception e) {
             LOG.error("Failed to parse data: {}", data, e);
         }
-        return value;
+        return null;
     }
 
+    public static BigDecimal parseDecimal(String price) {
+        return new BigDecimal(price).setScale(9, HALF_UP);
+    }
+
+    public static BigDecimal parseDecimal(Double price) {
+        return new BigDecimal(price).setScale(9, HALF_UP);
+    }
+
+    public static BigDecimal parseInverse(String price) {
+        return BigDecimal.ONE.divide(parseDecimal(price), 9, HALF_UP);
+    }
+
+    public static BigDecimal parseInverse(BigDecimal price) {
+        return BigDecimal.ONE.divide(price, 9, HALF_UP);
+    }
+
+}
+
+class KlubToUSD {
+    private String rate;
+
+    private static class KlubToUSDHolder {
+        private static final KlubToUSD INSTANCE = new KlubToUSD();
+    }
+
+    public static KlubToUSD getInstance() {
+        return KlubToUSDHolder.INSTANCE;
+    }
+
+    public void updateRate(String rate) {
+        this.rate = rate;
+    }
+
+    public String getRate() {
+        return rate;
+    }
 }
