@@ -6,6 +6,16 @@
     "title": "Trade History",
     "type": "object",
     "properties": {
+        "percentChange": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Percent change",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_percentChange",
+            "title": "TradeHistory.percentChange",
+            "type": "number"
+        },
         "side": {
             "storages": ["SQL"],
             "nullable": true,

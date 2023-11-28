@@ -21,6 +21,8 @@ public class TradeHistory implements CustomEntity, Serializable {
     @JsonIgnore()
     private DBStorageType storages;
 
+    private Double percentChange;
+
     private String side;
 
     private String priceEuro;
@@ -46,6 +48,14 @@ public class TradeHistory implements CustomEntity, Serializable {
 
     public void setStorages(DBStorageType storages) {
         this.storages = storages;
+    }
+
+    public Double getPercentChange() {
+        return percentChange;
+    }
+
+    public void setPercentChange(Double percentChange) {
+        this.percentChange = percentChange;
     }
 
     public String getSide() {

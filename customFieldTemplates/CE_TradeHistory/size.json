@@ -15,7 +15,7 @@
   "contentTypes" : [ ],
   "fileExtensions" : [ ],
   "saveOnExplorer" : false,
-  "guiPosition" : "tab:Trade History:0;field:2",
+  "guiPosition" : "tab:Trade History:0;field:3",
   "identifier" : false,
   "storages" : [ "SQL" ],
   "samples" : [ ],
