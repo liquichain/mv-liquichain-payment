@@ -1,0 +1,12 @@
+{
+  "code" : "TradeHistory",
+  "name" : "Trade History",
+  "description" : "Trade history",
+  "customEntityCategoryCode" : "liquichain",
+  "availableStorages" : [ "SQL" ],
+  "sqlStorageConfiguration" : {
+    "storeAsTable" : true
+  },
+  "samples" : [ ],
+  "audited" : false
+}

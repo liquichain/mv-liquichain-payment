@@ -1,0 +1,54 @@
+{
+    "storages": ["SQL"],
+    "default": "Trade history",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "id": "TradeHistory",
+    "title": "Trade History",
+    "type": "object",
+    "properties": {
+        "side": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Side",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_side",
+            "title": "TradeHistory.side",
+            "type": "string",
+            "maxLength": 4
+        },
+        "size": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Size",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_size",
+            "title": "TradeHistory.size",
+            "type": "string",
+            "maxLength": 24
+        },
+        "price": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "description": "Price",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_price",
+            "title": "TradeHistory.price",
+            "type": "string",
+            "maxLength": 24
+        },
+        "time": {
+            "storages": ["SQL"],
+            "nullable": true,
+            "format": "date-time",
+            "description": "Time",
+            "readOnly": false,
+            "versionable": false,
+            "id": "CE_TradeHistory_time",
+            "title": "TradeHistory.time",
+            "type": "string"
+        }
+    }
+}
