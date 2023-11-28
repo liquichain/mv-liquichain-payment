@@ -1,6 +1,7 @@
 package io.liquichain.api.payment.job;
 
 import static java.math.RoundingMode.HALF_UP;
+import static org.meveo.commons.utils.StringUtils.isBlank;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,6 @@ import org.meveo.admin.exception.BusinessException;
 import org.meveo.api.persistence.CrossStorageApi;
 import org.meveo.commons.utils.ParamBean;
 import org.meveo.commons.utils.ParamBeanFactory;
-import org.meveo.commons.utils.StringUtils;
 import org.meveo.model.customEntities.TradeHistory;
 import org.meveo.model.storage.Repository;
 import org.meveo.service.script.Script;
@@ -54,7 +54,11 @@ public class RetrieveKucoinTradeHistory extends Script {
     private final String apiPassphrase = config.getProperty("kucoin.api.passphrase", "");
 
     public static BigDecimal retrieveKlubToUSDRate() {
-        return new BigDecimal(klubToUSD.getRate()).setScale(9, HALF_UP);
+        String rate = klubToUSD.getRate();
+        if (isBlank(rate)) {
+            return parseDecimal("0.015");
+        }
+        return parseDecimal(klubToUSD.getRate());
     }
 
     @Override
@@ -103,7 +107,7 @@ public class RetrieveKucoinTradeHistory extends Script {
     }
 
     private void saveData(String responseData) {
-        if (StringUtils.isBlank(responseData)) {
+        if (isBlank(responseData)) {
             throw new RuntimeException("Response from kucoin was empty.");
         }
 
