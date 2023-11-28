@@ -145,6 +145,17 @@ public class RetrieveKucoinTradeHistory extends Script {
         return json;
     }
 
+    public static <T> T convert(String data) {
+        T value = null;
+        try {
+            value = OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
+            });
+        } catch (Exception e) {
+            LOG.error("Failed to parse data: {}", data, e);
+        }
+        return value;
+    }
+
     public static <T> T convert(Object data) {
         T value = null;
         try {
