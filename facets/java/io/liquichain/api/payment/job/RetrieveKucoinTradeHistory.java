@@ -99,7 +99,7 @@ public class RetrieveKucoinTradeHistory extends Script {
             String price = "" + item.get("price");
             String size = "" + item.get("size");
             String side = "" + item.get("side");
-            Instant time = Instant.ofEpochMilli((Long) item.get("time"));
+            Instant time = Instant.ofEpochMilli(((Long) item.get("time")) / 1000000);
 
             TradeHistory tradeHistory = new TradeHistory();
             tradeHistory.setUuid(sequence);
