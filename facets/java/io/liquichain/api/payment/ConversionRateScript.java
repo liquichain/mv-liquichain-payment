@@ -71,18 +71,19 @@ public class ConversionRateScript extends Script {
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
         downloadRates();
-        result = Map.of(
-                "timestamp", Instant.now().toEpochMilli(),
-                "data", CONVERSION_RATE
-                        .entrySet().stream()
-                        .map(entry -> {
-                            String[] symbols = entry.getKey().split("_TO_");
-                            return Map.of(
-                                    "from", Map.of("value", 1, "currency", symbols[0]),
-                                    "to", Map.of("value", entry.getValue(), "currency", symbols[1])
-                            );
-                        })
-                        .collect(Collectors.toList()));
+        result = new HashMap<>() {{
+            put("timestamp", Instant.now().toEpochMilli());
+            put("data", CONVERSION_RATE
+                    .entrySet().stream()
+                    .map(entry -> {
+                        String[] symbols = entry.getKey().split("_TO_");
+                        return Map.of(
+                                "from", Map.of("value", 1, "currency", symbols[0]),
+                                "to", Map.of("value", entry.getValue(), "currency", symbols[1])
+                        );
+                    })
+                    .collect(Collectors.toList()));
+        }};
     }
 
     private void downloadRates() {
