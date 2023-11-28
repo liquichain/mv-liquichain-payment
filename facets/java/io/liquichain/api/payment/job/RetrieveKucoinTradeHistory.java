@@ -65,7 +65,7 @@ public class RetrieveKucoinTradeHistory extends Script {
 
             if (response.getStatus() == 200) {
                 String responseData = response.readEntity(String.class);
-                LOG.info("Received response from kucoin: {}", responseData);
+                LOG.debug("Received response from kucoin: {}", responseData);
                 saveData(responseData);
             } else {
                 throw new RuntimeException("Data retrieval failed. HTTP error code: {}" + response.getStatus());
@@ -143,17 +143,6 @@ public class RetrieveKucoinTradeHistory extends Script {
             LOG.error("Failed to convert to json: {}", data, e);
         }
         return json;
-    }
-
-    public static <T> T convert(String data) {
-        T value = null;
-        try {
-            value = OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
-            });
-        } catch (Exception e) {
-            LOG.error("Failed to parse data: {}", data, e);
-        }
-        return value;
     }
 
     public static <T> T convert(Object data) {
