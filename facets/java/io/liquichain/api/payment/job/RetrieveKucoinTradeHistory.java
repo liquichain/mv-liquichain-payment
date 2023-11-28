@@ -2,18 +2,23 @@ package io.liquichain.api.payment.job;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.meveo.admin.exception.BusinessException;
+import org.meveo.api.persistence.CrossStorageApi;
 import org.meveo.commons.utils.ParamBean;
 import org.meveo.commons.utils.ParamBeanFactory;
+import org.meveo.commons.utils.StringUtils;
+import org.meveo.model.customEntities.TradeHistory;
+import org.meveo.model.storage.Repository;
 import org.meveo.service.script.Script;
+import org.meveo.service.storage.RepositoryService;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +35,9 @@ public class RetrieveKucoinTradeHistory extends Script {
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
+    private final RepositoryService repositoryService = getCDIBean(RepositoryService.class);
+    private final Repository defaultRepo = repositoryService.findDefaultRepository();
     private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
     private final ParamBean config = paramBeanFactory.getInstance();
 
@@ -57,8 +65,8 @@ public class RetrieveKucoinTradeHistory extends Script {
 
             if (response.getStatus() == 200) {
                 String responseData = response.readEntity(String.class);
-                LOG.info("Received response from kucoin: {}", toJson(responseData));
-                Map<String, Object> responseMap = convert(responseData);
+                LOG.info("Received response from kucoin: {}", responseData);
+                saveData(responseData);
             } else {
                 throw new RuntimeException("Data retrieval failed. HTTP error code: {}" + response.getStatus());
             }
@@ -66,6 +74,47 @@ public class RetrieveKucoinTradeHistory extends Script {
         } catch (Exception e) {
             throw new BusinessException("Failed to retrieve trade history from kucoin.", e);
         }
+    }
+
+    private void saveData(String responseData) {
+        if (StringUtils.isBlank(responseData)) {
+            throw new RuntimeException("Response from kucoin was empty.");
+        }
+
+        Map<String, Object> responseMap = convert(responseData);
+
+        if (responseMap == null) {
+            throw new RuntimeException("Response map was null.");
+        }
+
+        String statusCode = "" + responseMap.get("code");
+        if (!"200000".equals(statusCode)) {
+            throw new RuntimeException("Failed to retrieve kucoin trade history. Status code: " + statusCode);
+        }
+
+        List<Map<String, Object>> tradeHistoryList = convert(responseMap.get("data"));
+
+        tradeHistoryList.forEach(item -> {
+            String sequence = "" + item.get("sequence");
+            String price = "" + item.get("price");
+            String size = "" + item.get("size");
+            String side = "" + item.get("side");
+            Instant time = Instant.ofEpochMilli((Long) item.get("time"));
+
+            TradeHistory tradeHistory = new TradeHistory();
+            tradeHistory.setUuid(sequence);
+            tradeHistory.setPrice(price);
+            tradeHistory.setSize(size);
+            tradeHistory.setSide(side);
+            tradeHistory.setTime(time);
+
+            try {
+                crossStorageApi.createOrUpdate(tradeHistory);
+            } catch (Exception e){
+                LOG.error("Failed to save trade history: {}", toJson(item), e);
+            }
+        });
+
     }
 
     private String generateSignature(String timestamp) {
@@ -100,6 +149,17 @@ public class RetrieveKucoinTradeHistory extends Script {
         T value = null;
         try {
             value = OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
+            });
+        } catch (Exception e) {
+            LOG.error("Failed to parse data: {}", data, e);
+        }
+        return value;
+    }
+
+    public static <T> T convert(Object data) {
+        T value = null;
+        try {
+            value = OBJECT_MAPPER.convertValue(data, new TypeReference<T>() {
             });
         } catch (Exception e) {
             LOG.error("Failed to parse data: {}", data, e);
