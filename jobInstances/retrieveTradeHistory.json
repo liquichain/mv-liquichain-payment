@@ -1,0 +1,19 @@
+{
+  "active" : false,
+  "code" : "retrieveTradeHistory",
+  "description" : "Retrieves trade history and saves to Trade History table",
+  "customFields" : {
+    "customField" : [ {
+      "code" : "ScriptingJob_script",
+      "entityReferenceValue" : {
+        "classname" : "org.meveo.model.scripts.ScriptInstance",
+        "code" : "io.liquichain.api.payment.job.RetrieveKucoinTradeHistory",
+        "id" : 96
+      }
+    } ]
+  },
+  "jobCategory" : "MEDIATION",
+  "jobTemplate" : "ScriptingJob",
+  "timerCode" : "10sec",
+  "limitToSingleNode" : true
+}
