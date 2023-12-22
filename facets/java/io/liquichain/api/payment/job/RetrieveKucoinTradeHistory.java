@@ -6,6 +6,7 @@ import static org.meveo.commons.utils.StringUtils.isBlank;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class RetrieveKucoinTradeHistory extends Script {
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final KlubToUSD klubToUSD = KlubToUSD.getInstance();
+    private static final ExchangeRate exchangeRate = ExchangeRate.getInstance();
 
     private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
     private final RepositoryService repositoryService = getCDIBean(RepositoryService.class);
@@ -167,29 +169,34 @@ public class RetrieveKucoinTradeHistory extends Script {
 
     public BigDecimal retrieveExchangeRate() {
         try {
-            ResteasyClient client = new ResteasyClientBuilder().build();
-            WebTarget webTarget = client.target(EXCHANGE_RATE_URL + exchangeRateKey);
-            Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
+            long now = Instant.now().toEpochMilli();
+            if(exchangeRate.getRate() == null || (now > exchangeRate.getNextRateUpdate())) {
+                ResteasyClient client = new ResteasyClientBuilder().build();
+                WebTarget webTarget = client.target(EXCHANGE_RATE_URL + exchangeRateKey);
+                Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
 
-            if (response == null || response.getStatus() != 200) {
-                return null;
-            }
-            String responseData = response.readEntity(String.class);
-            LOG.info("Exchange rate response: {}", responseData);
+                if (response == null || response.getStatus() != 200) {
+                    return null;
+                }
+                String responseData = response.readEntity(String.class);
+                LOG.info("Exchange rate response: {}", responseData);
 
-            Map<String, Object> responseMap = convert(responseData);
-            if (responseMap == null) {
-                throw new RuntimeException("Failed to map response data.");
+                Map<String, Object> responseMap = convert(responseData);
+                if (responseMap == null) {
+                    throw new RuntimeException("Failed to map response data.");
+                }
+                Boolean success = convert(responseMap.get("success"));
+                if (!Boolean.TRUE.equals(success)) {
+                    throw new RuntimeException("Response status: " + success);
+                }
+                Map<String, Double> rates = convert(responseMap.get("quotes"));
+                if (rates == null) {
+                    throw new RuntimeException("Rates received was empty");
+                }
+                exchangeRate.setRate(parseDecimal(rates.get("USDEUR")));
+                exchangeRate.setNextRateUpdate();
             }
-            Boolean success = convert(responseMap.get("success"));
-            if (!Boolean.TRUE.equals(success)) {
-                throw new RuntimeException("Response status: " + success);
-            }
-            Map<String, Double> rates = convert(responseMap.get("rates"));
-            if (rates == null) {
-                throw new RuntimeException("Rates received was empty");
-            }
-            return parseDecimal(rates.get("USD"));
+            return exchangeRate.getRate();
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve exchange rate.", e);
         }
@@ -277,5 +284,35 @@ class KlubToUSD {
 
     public String getRate() {
         return rate;
+    }
+}
+
+class ExchangeRate {
+    private BigDecimal rate;
+    private long nextRateUpdate = 0;
+
+    private static class ExchangeRateHolder {
+        private static final ExchangeRate INSTANCE = new ExchangeRate();
+    }
+
+    public static ExchangeRate getInstance() {
+        return ExchangeRateHolder.INSTANCE;
+    }
+
+    public BigDecimal getRate() {
+        return rate;
+    }
+
+    public long getNextRateUpdate() {
+        return nextRateUpdate;
+    }
+
+    public void setRate(BigDecimal rate) {
+        this.rate = rate;
+    }
+    public void setNextRateUpdate(){
+        // replace this with the applicable rate update frequency as described in https://exchangerate.host/product
+        // free plan only has daily updates
+        this.nextRateUpdate = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();
     }
 }
