@@ -1,6 +1,5 @@
 package io.liquichain.api.payment;
 
-import static io.liquichain.api.payment.ConversionRateScript.CONVERSION_RATE;
 import static java.math.RoundingMode.HALF_EVEN;
 
 import java.io.IOException;
@@ -50,11 +49,12 @@ public class LiquichainPaymentScript extends EndpointScript {
     private final Gson gson = new Gson();
 
     private final String PAYMENT_WALLET = config
-        .getProperty("payment.wallet", "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623");
+            .getProperty("payment.wallet", "b4bF880BAfaF68eC8B5ea83FaA394f5133BB9623");
     public final String ORIGIN_WALLET = PAYMENT_WALLET.toLowerCase();
     private final String RETURN_URL = config.getProperty("payment.capture.url", "https://dev.jips.io/");
 
     private final LiquichainTransaction liquichainTransaction = new LiquichainTransaction();
+    private final ConversionRateScript conversionRateScript = new ConversionRateScript();
     private String result;
     private String orderId = null;
 
@@ -70,8 +70,24 @@ public class LiquichainPaymentScript extends EndpointScript {
     public void execute(Map<String, Object> parameters) throws BusinessException {
         Map<String, Object> fromAmount = (Map<String, Object>) parameters.get("from");
         Map<String, Object> toAmount = (Map<String, Object>) parameters.get("to");
-        String toWalletId = normalizeHash("" + parameters.get("toWallet"));
-        String fromWalletId = normalizeHash("" + parameters.get("fromWallet"));
+        Object accountParameter = parameters.get("account");
+        Object toWalletParameter = parameters.get("toWallet");
+        Object fromWalletParameter = parameters.get("fromWallet");
+
+        String toWalletId = null;
+        if (toWalletParameter != null && StringUtils.isNotBlank("" + toWalletParameter)) {
+            toWalletId = normalizeHash("" + toWalletParameter);
+        } else if (accountParameter != null && StringUtils.isNotBlank("" + accountParameter)) {
+            toWalletId = normalizeHash("" + accountParameter);
+        }
+
+        String fromWalletId = null;
+        if (fromWalletParameter != null && StringUtils.isNotBlank("" + fromWalletParameter)) {
+            fromWalletId = normalizeHash("" + fromWalletParameter);
+        } else {
+            fromWalletId = PAYMENT_WALLET;
+        }
+
         String path = this.endpointRequest.getPathInfo();
         if (path.lastIndexOf("/") == 16) {
             orderId = path.substring(17);
@@ -105,7 +121,7 @@ public class LiquichainPaymentScript extends EndpointScript {
             String toCurrency = "" + toAmount.get("currency");
             String toValue = "" + toAmount.get("amount");
 
-            BigDecimal conversionRate = CONVERSION_RATE.get(fromCurrency + "_TO_" + toCurrency);
+            BigDecimal conversionRate = conversionRateScript.CONVERSION_RATE.get(fromCurrency + "_TO_" + toCurrency);
             BigDecimal decimalFromValue = new BigDecimal(fromValue).setScale(18, HALF_EVEN);
             BigDecimal convertedFromValue = conversionRate.multiply(decimalFromValue).setScale(18, HALF_EVEN);
             BigDecimal parsedToValue = new BigDecimal(toValue).setScale(18, HALF_EVEN);
@@ -118,7 +134,7 @@ public class LiquichainPaymentScript extends EndpointScript {
 
             if (!sameAmount) {
                 String errorMessage = "The from(" + fromValue + fromCurrency + "=" + convertedFromValue + toCurrency +
-                    ") and to(" + parsedToValue + ") amounts are not the same.";
+                        ") and to(" + parsedToValue + ") amounts are not the same.";
                 LOG.error(errorMessage);
                 result = createErrorResponse(null, "400", errorMessage);
                 return;
@@ -207,11 +223,11 @@ public class LiquichainPaymentScript extends EndpointScript {
             } else if (StringUtils.isNotBlank(order.status()) && "COMPLETED".equalsIgnoreCase(order.status())) {
                 try {
                     BigInteger amountInDemos = (new BigDecimal(paypalOrder.getToAmount())).multiply(
-                        BigDecimal.TEN.pow(18)).toBigInteger();
+                            BigDecimal.TEN.pow(18)).toBigInteger();
                     String transactionHash = liquichainTransaction
-                        .transferSmartContract(ORIGIN_WALLET, paypalOrder.getToWallet(),
-                            amountInDemos, "topup", "Paypal topup",
-                            "You received your paypal topup!", paypalOrder.getFromWallet());
+                            .transferSmartContract(ORIGIN_WALLET, paypalOrder.getToWallet(),
+                                    amountInDemos, "topup", "Paypal topup",
+                                    "You received your paypal topup!", paypalOrder.getFromWallet());
                     LOG.info("created transaction, transactionHash={}", transactionHash);
                     paypalOrder.setStatus("OK");
                     try {
@@ -281,27 +297,26 @@ public class LiquichainPaymentScript extends EndpointScript {
         }
 
         String response = "{\n" +
-            "  \"status\": \"success\",\n" +
-            "  \"result\": " + orderJson + "\n" +
-            "}";
+                "  \"status\": \"success\",\n" +
+                "  \"result\": " + orderJson + "\n" +
+                "}";
         LOG.debug("response: {}", response);
         return response;
     }
 
     private String createErrorResponse(String orderId, String errorCode, String message) {
         String idFormat = orderId == null || NumberUtils.isParsable(orderId)
-            ? "  \"id\": %s,"
-            : "  \"id\": \"%s\",";
+                ? "  \"id\": %s,"
+                : "  \"id\": \"%s\",";
         String response = "{\n" +
-            String.format(idFormat, orderId) + "\n" +
-            "  \"status\": \"" + errorCode + "\",\n" +
-            "  \"message\": \"" + message + "\",\n" +
-            "}";
+                String.format(idFormat, orderId) + "\n" +
+                "  \"status\": \"" + errorCode + "\",\n" +
+                "  \"message\": \"" + message + "\",\n" +
+                "}";
         LOG.debug("error response: {}", response);
         return response;
     }
 }
-
 
 class OrderItem {
     private String currencyCode;
@@ -324,7 +339,6 @@ class OrderItem {
     }
 }
 
-
 class OrderService extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(OrderService.class);
     private final ParamBeanFactory paramBeanFactory = getCDIBean(ParamBeanFactory.class);
@@ -332,17 +346,17 @@ class OrderService extends Script {
 
     private final String PAYMENT_MODE = config.getProperty("payment.mode", "PRODUCTION");
     private final String SANDBOX_CLIENT_ID = config
-        .getProperty("payment.sandbox.client.id",
-            "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
+            .getProperty("payment.sandbox.client.id",
+                    "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
     private final String SANDBOX_CLIENT_SECRET = config
-        .getProperty("payment.sandbox.client.secret",
-            "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
+            .getProperty("payment.sandbox.client.secret",
+                    "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
     private final String LIVE_CLIENT_ID = config
-        .getProperty("payment.live.client.id",
-            "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
+            .getProperty("payment.live.client.id",
+                    "AWVIDI2xMJE0AXDOdEtttOW0WgrLzeNWBUAKClN4bVYXdeP2Hkx3BXPlXOahZs0palbyhcpzrow9ZMg3");
     private final String LIVE_CLIENT_SECRET = config
-        .getProperty("payment.live.client.secret",
-            "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
+            .getProperty("payment.live.client.secret",
+                    "EOHmSfHQQxACD94zzZOBqPXy3ETALxOTdpr-KRLw4ECRs0Bk3olEhn9AQTz922J6o3U5L47Se5x727l_");
 
     private PayPalEnvironment environment = null;
 
@@ -370,11 +384,11 @@ class OrderService extends Script {
             List<PurchaseUnitRequest> purchaseUnits = new ArrayList<>();
 
             orderItems.forEach((item) -> purchaseUnits
-                .add(new PurchaseUnitRequest()
-                    .amountWithBreakdown(
-                        new AmountWithBreakdown()
-                            .currencyCode(item.getCurrencyCode())
-                            .value(item.getValue()))));
+                    .add(new PurchaseUnitRequest()
+                            .amountWithBreakdown(
+                                    new AmountWithBreakdown()
+                                            .currencyCode(item.getCurrencyCode())
+                                            .value(item.getValue()))));
             orderRequest.purchaseUnits(purchaseUnits);
 
             ApplicationContext appContext = new ApplicationContext();
@@ -393,7 +407,7 @@ class OrderService extends Script {
                     LOG.debug("Order ID: " + order.id());
                     order.links()
                          .forEach(link -> LOG.debug(
-                             link.rel() + " => " + link.method() + ":" + link.href()));
+                                 link.rel() + " => " + link.method() + ":" + link.href()));
                 }
 
             } catch (IOException ioe) {

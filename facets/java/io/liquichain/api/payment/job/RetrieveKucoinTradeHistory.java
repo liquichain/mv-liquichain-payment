@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,7 +35,7 @@ import org.web3j.utils.Numeric;
 public class RetrieveKucoinTradeHistory extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(RetrieveKucoinTradeHistory.class);
     private static final String BASE_URL = "https://api.kucoin.com/api/v1";
-    private static final String EXCHANGE_RATE_URL = "https://api.exchangerate.host/latest?symbols=EUR,USD";
+    private static final String EXCHANGE_RATE_URL = "https://api.exchangerate.host/live?currencies=EUR&access_key=";
     private static final String ENDPOINT = "/market/histories?symbol=KLUB-USDT";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -52,8 +50,9 @@ public class RetrieveKucoinTradeHistory extends Script {
     private final String apiKey = config.getProperty("kucoin.api.key", "");
     private final String apiSecret = config.getProperty("kucoin.api.secret", "");
     private final String apiPassphrase = config.getProperty("kucoin.api.passphrase", "");
+    private final String exchangeRateKey = config.getProperty("exchangerate.api.key", "");
 
-    public static BigDecimal retrieveKlubToUSDRate() {
+    public BigDecimal retrieveKlubToUSDRate() {
         String rate = klubToUSD.getRate();
         if (isBlank(rate)) {
             return parseDecimal("0.015");
@@ -166,10 +165,10 @@ public class RetrieveKucoinTradeHistory extends Script {
         }
     }
 
-    public static BigDecimal retrieveExchangeRate() {
+    public BigDecimal retrieveExchangeRate() {
         try {
-            Client client = ClientBuilder.newClient();
-            WebTarget webTarget = client.target(EXCHANGE_RATE_URL);
+            ResteasyClient client = new ResteasyClientBuilder().build();
+            WebTarget webTarget = client.target(EXCHANGE_RATE_URL + exchangeRateKey);
             Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
 
             if (response == null || response.getStatus() != 200) {
@@ -214,7 +213,7 @@ public class RetrieveKucoinTradeHistory extends Script {
         }
     }
 
-    private static String toJson(Object data) {
+    private String toJson(Object data) {
         try {
             return OBJECT_MAPPER.writeValueAsString(data);
         } catch (Exception e) {
@@ -223,7 +222,7 @@ public class RetrieveKucoinTradeHistory extends Script {
         return null;
     }
 
-    private static <T> T convert(String data) {
+    private <T> T convert(String data) {
         try {
             return OBJECT_MAPPER.readValue(data, new TypeReference<T>() {
             });
@@ -233,7 +232,7 @@ public class RetrieveKucoinTradeHistory extends Script {
         return null;
     }
 
-    private static <T> T convert(Object data) {
+    private <T> T convert(Object data) {
         try {
             return OBJECT_MAPPER.convertValue(data, new TypeReference<T>() {
             });
@@ -243,19 +242,19 @@ public class RetrieveKucoinTradeHistory extends Script {
         return null;
     }
 
-    public static BigDecimal parseDecimal(String price) {
+    public BigDecimal parseDecimal(String price) {
         return new BigDecimal(price).setScale(9, HALF_UP);
     }
 
-    public static BigDecimal parseDecimal(Double price) {
+    public BigDecimal parseDecimal(Double price) {
         return new BigDecimal(price).setScale(9, HALF_UP);
     }
 
-    public static BigDecimal parseInverse(String price) {
+    public BigDecimal parseInverse(String price) {
         return BigDecimal.ONE.divide(parseDecimal(price), 9, HALF_UP);
     }
 
-    public static BigDecimal parseInverse(BigDecimal price) {
+    public BigDecimal parseInverse(BigDecimal price) {
         return BigDecimal.ONE.divide(price, 9, HALF_UP);
     }
 

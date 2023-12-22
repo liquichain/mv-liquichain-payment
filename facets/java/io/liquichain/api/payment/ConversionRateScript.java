@@ -1,6 +1,5 @@
 package io.liquichain.api.payment;
 
-import static io.liquichain.api.payment.job.RetrieveKucoinTradeHistory.*;
 import static java.math.RoundingMode.HALF_UP;
 
 import java.math.BigDecimal;
@@ -14,29 +13,29 @@ import org.meveo.service.script.Script;
 
 import io.liquichain.api.payment.job.RetrieveKucoinTradeHistory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConversionRateScript extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(ConversionRateScript.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final long RATE_EXCHANGE_QUERY_DELAY_IN_MS = 10000;
 
-    public static BigDecimal EUR_TO_USD = parseDecimal("1.1");
+    private final RetrieveKucoinTradeHistory tradeHistory = new RetrieveKucoinTradeHistory();
 
-    public static BigDecimal LCN_TO_EUR = parseDecimal("2000");
-    public static BigDecimal EUR_TO_LCN = parseInverse(LCN_TO_EUR);
+    public BigDecimal EUR_TO_USD = parseDecimal("1.1");
 
-    public static BigDecimal KLUB_TO_USD = parseDecimal("0.015");
-    public static BigDecimal USD_TO_KLUB = parseInverse(KLUB_TO_USD);
+    public BigDecimal LCN_TO_EUR = parseDecimal("2000");
+    public BigDecimal EUR_TO_LCN = parseInverse(LCN_TO_EUR);
 
-    public static BigDecimal CFA_TO_EUR = new BigDecimal("0.015").setScale(24, HALF_UP);
-    public static BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
+    public BigDecimal KLUB_TO_USD = parseDecimal("0.015");
+    public BigDecimal USD_TO_KLUB = parseInverse(KLUB_TO_USD);
 
-    private static long nextRateUpdate = 0;
+    public BigDecimal CFA_TO_EUR = new BigDecimal("0.015").setScale(24, HALF_UP);
+    public BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
 
-    public static final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>() {{
+    private long nextRateUpdate = 0;
+
+    public final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>() {{
         put("LCN_TO_EUR", LCN_TO_EUR);
         put("EUR_TO_LCN", EUR_TO_LCN);
         put("CFA_TO_EUR", CFA_TO_EUR);
@@ -49,8 +48,8 @@ public class ConversionRateScript extends Script {
         return result;
     }
 
-    static void setRates() {
-        BigDecimal klubToUSD = RetrieveKucoinTradeHistory.retrieveKlubToUSDRate();
+    private void setRates() {
+        BigDecimal klubToUSD = tradeHistory.retrieveKlubToUSDRate();
         if (klubToUSD != null) {
             KLUB_TO_USD = klubToUSD;
             USD_TO_KLUB = parseInverse(klubToUSD);
@@ -64,7 +63,7 @@ public class ConversionRateScript extends Script {
         CONVERSION_RATE.put("EUR_TO_KLUB", EUR_TO_KLUB);
     }
 
-    static {
+    {
         setRates();
     }
 
@@ -92,7 +91,7 @@ public class ConversionRateScript extends Script {
         }
 
         try {
-            EUR_TO_USD = retrieveExchangeRate();
+            EUR_TO_USD = tradeHistory.retrieveExchangeRate();
             setRates();
             nextRateUpdate = System.currentTimeMillis() + RATE_EXCHANGE_QUERY_DELAY_IN_MS;
         } catch (Exception e) {
@@ -100,12 +99,11 @@ public class ConversionRateScript extends Script {
         }
     }
 
-    public static String toJson(Object data) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(data);
-        } catch (Exception e) {
-            LOG.error("Failed to convert to json: {}", data, e);
-        }
-        return null;
+    private BigDecimal parseDecimal(String price) {
+        return new BigDecimal(price).setScale(9, HALF_UP);
+    }
+
+    private BigDecimal parseInverse(BigDecimal price) {
+        return BigDecimal.ONE.divide(price, 9, HALF_UP);
     }
 }
