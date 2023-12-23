@@ -197,7 +197,9 @@ public class RetrieveKucoinTradeHistory extends Script {
                 if (rates == null) {
                     throw new RuntimeException("Rates received was empty");
                 }
-                exchangeRate.setRate(parseDecimal(rates.get("USDEUR")));
+                Double rate = rates.get("USDEUR");
+                BigDecimal eurToUsd = rate == null ? new BigDecimal("1.1") : parseInverse(new BigDecimal(rate));
+                exchangeRate.setRate(eurToUsd);
                 exchangeRate.setNextRateUpdate();
             }
             return exchangeRate.getRate();
