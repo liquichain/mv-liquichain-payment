@@ -132,6 +132,8 @@ public class RetrieveKucoinTradeHistory extends Script {
         BigDecimal exchangeRate = retrieveExchangeRate();
         BigDecimal eurToUsd = exchangeRate == null ? parseDecimal("1.1") : exchangeRate;
 
+        LOG.info("Exchange rate EUR to USD: {}", eurToUsd);
+
         tradeHistoryList.sort(Comparator.comparing(item -> String.valueOf(item.get("sequence"))));
 
         BigDecimal previousPrice = BigDecimal.ZERO;
