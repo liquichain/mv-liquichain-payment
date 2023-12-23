@@ -75,7 +75,7 @@ public class RetrieveKucoinTradeHistory extends Script {
 
             if (response.getStatus() == 200) {
                 String responseData = response.readEntity(String.class);
-                LOG.info("Received response from kucoin: {}", responseData);
+                LOG.debug("Received response from kucoin: {}", responseData);
                 saveData(responseData);
             } else {
                 throw new RuntimeException("Data retrieval failed. HTTP error code: {}" + response.getStatus());
