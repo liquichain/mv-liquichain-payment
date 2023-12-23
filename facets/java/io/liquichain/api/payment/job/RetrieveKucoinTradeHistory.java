@@ -144,10 +144,12 @@ public class RetrieveKucoinTradeHistory extends Script {
             String side = "" + item.get("side");
             Instant time = Instant.ofEpochMilli(((Long) item.get("time")) / 1000000);
 
-            Double percentChange = currentPrice.subtract(previousPrice)
-                                               .divide(previousPrice, 9, HALF_UP)
-                                               .multiply(parseDecimal("100"))
-                                               .doubleValue();
+            Double percentChange = BigDecimal.ZERO.compareTo(previousPrice) > 0
+                    ? currentPrice.subtract(previousPrice)
+                                  .divide(previousPrice, 9, HALF_UP)
+                                  .multiply(parseDecimal("100"))
+                                  .doubleValue()
+                    : 0;
 
             TradeHistory tradeHistory = new TradeHistory();
             tradeHistory.setUuid(sequence);
@@ -170,7 +172,7 @@ public class RetrieveKucoinTradeHistory extends Script {
     public BigDecimal retrieveExchangeRate() {
         try {
             long now = Instant.now().toEpochMilli();
-            if(exchangeRate.getRate() == null || (now > exchangeRate.getNextRateUpdate())) {
+            if (exchangeRate.getRate() == null || (now > exchangeRate.getNextRateUpdate())) {
                 ResteasyClient client = new ResteasyClientBuilder().build();
                 WebTarget webTarget = client.target(EXCHANGE_RATE_URL + exchangeRateKey);
                 Response response = webTarget.request(MediaType.APPLICATION_JSON).get(Response.class);
@@ -310,7 +312,8 @@ class ExchangeRate {
     public void setRate(BigDecimal rate) {
         this.rate = rate;
     }
-    public void setNextRateUpdate(){
+
+    public void setNextRateUpdate() {
         // replace this with the applicable rate update frequency as described in https://exchangerate.host/product
         // free plan only has daily updates
         this.nextRateUpdate = Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli();
