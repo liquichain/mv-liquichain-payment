@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.meveo.admin.exception.BusinessException;
 import org.meveo.api.persistence.CrossStorageApi;
-import org.meveo.api.persistence.CrossStorageRequest;
 import org.meveo.model.customEntities.TradeHistory;
 import org.meveo.model.storage.Repository;
 import org.meveo.service.script.Script;
@@ -53,15 +52,14 @@ public class ExchangeRateProvider extends Script {
     public void execute(Map<String, Object> parameters) throws BusinessException {
         LOG.info("Retrieving exchange rate for currency: {}", toCurrency);
         Instant now = Instant.now();
-        Instant from = isNotBlank(this.from)? Instant.parse(this.from): now;
-        Instant to = isNotBlank(this.to) ? Instant.parse(this.to) : now.minus(1, ChronoUnit.DAYS);
+        Instant from = isNotBlank(this.from) ? Instant.parse(this.from) : now.minus(1, ChronoUnit.DAYS);
+        Instant to = isNotBlank(this.to) ? Instant.parse(this.to) : now;
 
-        CrossStorageRequest<TradeHistory> request = crossStorageApi.find(defaultRepo, TradeHistory.class)
-                                                                   .by("fromRange time", from)
-                                                                   .by("toRange time", to)
-                                                                   .orderBy("time", true);
-
-        List<TradeHistory> tradeHistories = request.getResults();
+        List<TradeHistory> tradeHistories = crossStorageApi.find(defaultRepo, TradeHistory.class)
+                                                           .by("fromRange time", from)
+                                                           .by("toRange time", to)
+                                                           .orderBy("time", true)
+                                                           .getResults();
 
         List<Map<String, Object>> tradeDetails = tradeHistories.stream().map(tradeHistory -> {
             Map<String, Object> details = new LinkedHashMap<>();
