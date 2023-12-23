@@ -36,7 +36,7 @@ import org.web3j.utils.Numeric;
 public class RetrieveKucoinTradeHistory extends Script {
     private static final Logger LOG = LoggerFactory.getLogger(RetrieveKucoinTradeHistory.class);
     private static final String BASE_URL = "https://api.kucoin.com/api/v1";
-    private static final String EXCHANGE_RATE_URL = "https://api.exchangerate.host/live?currencies=EUR&access_key=";
+    private static final String EXCHANGE_RATE_URL = "http://api.exchangerate.host/live?currencies=EUR&access_key=";
     private static final String ENDPOINT = "/market/histories?symbol=KLUB-USDT";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
