@@ -52,22 +52,14 @@ public class ExchangeRateProvider extends Script {
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
         LOG.info("Retrieving exchange rate for currency: {}", toCurrency);
+        Instant now = Instant.now();
+        Instant from = isNotBlank(this.from)? Instant.parse(this.from): now;
+        Instant to = isNotBlank(this.to) ? Instant.parse(this.to) : now.minus(1, ChronoUnit.DAYS);
 
         CrossStorageRequest<TradeHistory> request = crossStorageApi.find(defaultRepo, TradeHistory.class)
+                                                                   .by("fromRange time", from)
+                                                                   .by("toRange time", to)
                                                                    .orderBy("time", true);
-
-        Instant now = Instant.now();
-        if (isNotBlank(from)) {
-            request.by("fromRange time", Instant.parse(from));
-        } else {
-            request.by("fromRange time", now);
-        }
-
-        if (isNotBlank(to)) {
-            request.by("toRange time", Instant.parse(to));
-        } else {
-            request.by("toRange time", now.minus(1, ChronoUnit.DAYS));
-        }
 
         List<TradeHistory> tradeHistories = request.getResults();
 
