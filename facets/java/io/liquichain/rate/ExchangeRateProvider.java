@@ -4,6 +4,7 @@ import static org.meveo.commons.utils.StringUtils.isNotBlank;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +52,8 @@ public class ExchangeRateProvider extends Script {
     public void execute(Map<String, Object> parameters) throws BusinessException {
         LOG.info("Retrieving exchange rate for currency: {}", toCurrency);
 
-        CrossStorageRequest<TradeHistory> request = crossStorageApi.find(defaultRepo, TradeHistory.class);
+        CrossStorageRequest<TradeHistory> request = crossStorageApi.find(defaultRepo, TradeHistory.class)
+                                                                   .orderBy("time", true);
 
         Instant now = Instant.now();
         if (isNotBlank(from)) {
@@ -68,14 +70,13 @@ public class ExchangeRateProvider extends Script {
 
         List<TradeHistory> tradeHistories = request.getResults();
 
-        result = Map.of(
-                "from", from,
-                "to", to,
-                "data", tradeHistories.stream().map(tradeHistory -> Map.of(
-                        "timestamp", tradeHistory.getTime().toEpochMilli(),
-                        "value", ("USD".equals(toCurrency) ? tradeHistory.getPrice() : tradeHistory.getPriceEuro()),
-                        "percentChange", tradeHistory.getPercentChange()
-                ))
-        );
+        result = new LinkedHashMap<>() {{
+            put("from", from);
+            put("to", to);
+            put("data", tradeHistories.stream().map(tradeHistory -> Map.of(
+                    "timestamp", tradeHistory.getTime().toEpochMilli(),
+                    "value", ("USD".equals(toCurrency) ? tradeHistory.getPrice() : tradeHistory.getPriceEuro()),
+                    "percentChange", tradeHistory.getPercentChange())));
+        }};
     }
 }
