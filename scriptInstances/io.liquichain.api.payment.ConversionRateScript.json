@@ -4,7 +4,7 @@
   "inputs" : [ ],
   "outputs" : [ {
     "name" : "result",
-    "type" : "String"
+    "type" : "Map<String,Object>"
   } ],
   "generateOutputs" : false,
   "type" : "JAVA",
@@ -12,5 +12,5 @@
   "executionRoles" : [ "APP_USER" ],
   "sourcingRoles" : [ ],
   "mavenDependencies" : [ ],
-  "importScriptInstances" : [ ]
+  "importScriptInstances" : [ "io.liquichain.api.payment.job.RetrieveKucoinTradeHistory" ]
 }

@@ -22,5 +22,5 @@
     "version" : "1.0.3",
     "coordinates" : "com.paypal.sdk:checkout-sdk:1.0.3"
   } ],
-  "importScriptInstances" : [ "io.liquichain.api.core.LiquichainTransaction" ]
+  "importScriptInstances" : [ "io.liquichain.api.core.LiquichainTransaction", "io.liquichain.api.payment.job.RetrieveKucoinTradeHistory" ]
 }
