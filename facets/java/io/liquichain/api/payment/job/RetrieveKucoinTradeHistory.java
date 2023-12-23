@@ -141,7 +141,7 @@ public class RetrieveKucoinTradeHistory extends Script {
             String sequence = "" + item.get("sequence");
             String price = "" + item.get("price");
             BigDecimal currentPrice = parseDecimal(price);
-            String priceEuro = String.valueOf(parseInverse(currentPrice.multiply(eurToUsd).setScale(9, HALF_UP)));
+            String priceEuro = String.valueOf(currentPrice.multiply(eurToUsd).setScale(9, HALF_UP));
             String size = "" + item.get("size");
             String side = "" + item.get("side");
             Instant time = Instant.ofEpochMilli(((Long) item.get("time")) / 1000000);
