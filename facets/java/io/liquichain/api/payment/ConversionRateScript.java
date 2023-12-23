@@ -27,9 +27,6 @@ public class ConversionRateScript extends Script {
     public BigDecimal LCN_TO_EUR = parseDecimal("2000");
     public BigDecimal EUR_TO_LCN = parseInverse(LCN_TO_EUR);
 
-    public BigDecimal KLUB_TO_USD = parseDecimal("0.015");
-    public BigDecimal USD_TO_KLUB = parseInverse(KLUB_TO_USD);
-
     public BigDecimal CFA_TO_EUR = new BigDecimal("0.015").setScale(24, HALF_UP);
     public BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
 
@@ -47,18 +44,21 @@ public class ConversionRateScript extends Script {
     }
 
     private void setRates() {
+        BigDecimal KLUB_TO_USD = parseDecimal("0.015");
+        BigDecimal KLUB_TO_EUR = EUR_TO_USD.multiply(KLUB_TO_USD).setScale(9, HALF_UP);
         BigDecimal klubToUSD = tradeHistory.retrieveKlubToUSDRate();
         if (klubToUSD != null) {
             KLUB_TO_USD = klubToUSD;
-            USD_TO_KLUB = parseInverse(klubToUSD);
-            CONVERSION_RATE.put("KLUB_TO_USD", KLUB_TO_USD);
-            CONVERSION_RATE.put("USD_TO_KLUB", USD_TO_KLUB);
         }
+        CONVERSION_RATE.put("KLUB_TO_USD", KLUB_TO_USD);
+        CONVERSION_RATE.put("USD_TO_KLUB", parseInverse(KLUB_TO_USD));
 
-        BigDecimal EUR_TO_KLUB = USD_TO_KLUB.multiply(EUR_TO_USD).setScale(9, HALF_UP);
-        BigDecimal KLUB_TO_EUR = parseInverse(EUR_TO_KLUB);
+        BigDecimal klubToEUR = tradeHistory.retrieveKlubToEurRate();
+        if (klubToEUR != null) {
+            KLUB_TO_EUR = klubToEUR;
+        }
         CONVERSION_RATE.put("KLUB_TO_EUR", KLUB_TO_EUR);
-        CONVERSION_RATE.put("EUR_TO_KLUB", EUR_TO_KLUB);
+        CONVERSION_RATE.put("EUR_TO_KLUB", parseInverse(KLUB_TO_EUR));
     }
 
     {

@@ -40,7 +40,7 @@ public class RetrieveKucoinTradeHistory extends Script {
     private static final String ENDPOINT = "/market/histories?symbol=KLUB-USDT";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final KlubToUSD klubToUSD = KlubToUSD.getInstance();
+    private static final ConversionRate conversionRate = ConversionRate.getInstance();
     private static final ExchangeRate exchangeRate = ExchangeRate.getInstance();
 
     private final CrossStorageApi crossStorageApi = getCDIBean(CrossStorageApi.class);
@@ -55,11 +55,19 @@ public class RetrieveKucoinTradeHistory extends Script {
     private final String exchangeRateKey = config.getProperty("exchangerate.api.key", "");
 
     public BigDecimal retrieveKlubToUSDRate() {
-        String rate = klubToUSD.getRate();
+        String rate = conversionRate.getUsdRate();
         if (isBlank(rate)) {
             return parseDecimal("0.015");
         }
-        return parseDecimal(klubToUSD.getRate());
+        return parseDecimal(conversionRate.getUsdRate());
+    }
+
+    public BigDecimal retrieveKlubToEurRate() {
+        String rate = conversionRate.getEurRate();
+        if (isBlank(rate)) {
+            return parseDecimal("1.1").multiply(parseDecimal("0.015")).setScale(9, HALF_UP);
+        }
+        return parseDecimal(conversionRate.getEurRate());
     }
 
     @Override
@@ -101,7 +109,10 @@ public class RetrieveKucoinTradeHistory extends Script {
                                                         .orderBy("time", false)
                                                         .limit(1)
                                                         .getResult();
-            klubToUSD.updateRate(latestHistory.getPrice());
+            LOG.info("Latest trade history: {}", toJson(latestHistory));
+
+            conversionRate.setUsdRate(latestHistory.getPrice());
+            conversionRate.setEurRate(latestHistory.getPriceEuro());
         } catch (Exception e) {
             LOG.error("Failed to retrieve latest trade history.", e);
         }
@@ -273,23 +284,32 @@ public class RetrieveKucoinTradeHistory extends Script {
 
 }
 
-class KlubToUSD {
-    private String rate;
+class ConversionRate {
+    private String usdRate;
+    private String eurRate;
 
-    private static class KlubToUSDHolder {
-        private static final KlubToUSD INSTANCE = new KlubToUSD();
+    private static class ConveersionRateHolder {
+        private static final ConversionRate INSTANCE = new ConversionRate();
     }
 
-    public static KlubToUSD getInstance() {
-        return KlubToUSDHolder.INSTANCE;
+    public static ConversionRate getInstance() {
+        return ConveersionRateHolder.INSTANCE;
     }
 
-    public void updateRate(String rate) {
-        this.rate = rate;
+    public String getUsdRate() {
+        return usdRate;
     }
 
-    public String getRate() {
-        return rate;
+    public void setUsdRate(String usdRate) {
+        this.usdRate = usdRate;
+    }
+
+    public String getEurRate() {
+        return eurRate;
+    }
+
+    public void setEurRate(String eurRate) {
+        this.eurRate = eurRate;
     }
 }
 
