@@ -22,8 +22,6 @@ public class ConversionRateScript extends Script {
 
     private final RetrieveKucoinTradeHistory tradeHistory = new RetrieveKucoinTradeHistory();
 
-    public BigDecimal EUR_TO_USD = parseDecimal("1.1");
-
     public BigDecimal LCN_TO_EUR = parseDecimal("2000");
     public BigDecimal EUR_TO_LCN = parseInverse(LCN_TO_EUR);
 
@@ -45,7 +43,7 @@ public class ConversionRateScript extends Script {
 
     private void setRates() {
         BigDecimal KLUB_TO_USD = parseDecimal("0.015");
-        BigDecimal KLUB_TO_EUR = EUR_TO_USD.multiply(KLUB_TO_USD).setScale(9, HALF_UP);
+        BigDecimal KLUB_TO_EUR = parseDecimal("1.1").multiply(KLUB_TO_USD).setScale(9, HALF_UP);
         BigDecimal klubToUSD = tradeHistory.retrieveKlubToUSDRate();
         if (klubToUSD != null) {
             KLUB_TO_USD = klubToUSD;
@@ -61,13 +59,9 @@ public class ConversionRateScript extends Script {
         CONVERSION_RATE.put("EUR_TO_KLUB", parseInverse(KLUB_TO_EUR));
     }
 
-    {
-        setRates();
-    }
-
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
-        downloadRates();
+        setRates();
         result = new HashMap<>() {{
             put("timestamp", Instant.now().toEpochMilli());
             put("data", CONVERSION_RATE
@@ -81,16 +75,6 @@ public class ConversionRateScript extends Script {
                     })
                     .collect(Collectors.toList()));
         }};
-    }
-
-    private void downloadRates() {
-        try {
-            EUR_TO_USD = tradeHistory.retrieveExchangeRate();
-            LOG.info("EUR to USD exchange rate: {}", EUR_TO_USD);
-            setRates();
-        } catch (Exception e) {
-            LOG.warn("Failed to retrieve exchange rate: {}", e.getMessage());
-        }
     }
 
     private BigDecimal parseDecimal(String price) {
