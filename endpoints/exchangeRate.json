@@ -7,28 +7,23 @@
   "synchronous" : true,
   "method" : "GET",
   "parameterMappings" : [ {
-    "serviceParameter" : "fromDate",
+    "serviceParameter" : "from",
     "multivalued" : false,
     "parameterName" : "from",
     "valueRequired" : false
   }, {
-    "serviceParameter" : "toDate",
+    "serviceParameter" : "to",
     "multivalued" : false,
     "parameterName" : "to",
     "valueRequired" : false
-  }, {
-    "serviceParameter" : "maxValues",
-    "multivalued" : false,
-    "parameterName" : "limit",
-    "valueRequired" : false
-  }],
-  "pathParameters" : [ "fromCurrency", "toCurrency" ],
+  } ],
+  "pathParameters" : [ "toCurrency" ],
   "roles" : [ ],
   "returnedVariableName" : "result",
-  "serializeResult" : false,
+  "serializeResult" : true,
   "contentType" : "application/json",
   "basePath" : "exchangeRate",
-  "path" : "/{fromCurrency}/{toCurrency}",
+  "path" : "/{toCurrency}",
   "pool" : {
     "usePool" : false
   }

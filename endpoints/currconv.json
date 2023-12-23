@@ -1,7 +1,7 @@
 {
   "code" : "currconv",
   "description" : "licoin currency",
-  "secured" : true,
+  "secured" : false,
   "checkPathParams" : true,
   "serviceCode" : "io.liquichain.api.payment.ConversionRateScript",
   "synchronous" : true,
@@ -10,7 +10,7 @@
   "pathParameters" : [ ],
   "roles" : [ ],
   "returnedVariableName" : "result",
-  "serializeResult" : false,
+  "serializeResult" : true,
   "contentType" : "application/json",
   "basePath" : "currconv",
   "path" : "/",
