@@ -4,6 +4,7 @@ import static org.meveo.commons.utils.StringUtils.isNotBlank;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,10 +74,11 @@ public class ExchangeRateProvider extends Script {
         result = new LinkedHashMap<>() {{
             put("from", from);
             put("to", to);
-            put("data", tradeHistories.stream().map(tradeHistory -> Map.of(
-                    "timestamp", tradeHistory.getTime().toEpochMilli(),
-                    "value", ("USD".equals(toCurrency) ? tradeHistory.getPrice() : tradeHistory.getPriceEuro()),
-                    "percentChange", tradeHistory.getPercentChange())));
+            put("data", tradeHistories.stream().map(tradeHistory -> new HashMap<>() {{
+                put("timestamp", tradeHistory.getTime().toEpochMilli());
+                put("value", ("USD".equals(toCurrency) ? tradeHistory.getPrice() : tradeHistory.getPriceEuro()));
+                put("percentChange", tradeHistory.getPercentChange());
+            }}));
         }};
     }
 }
