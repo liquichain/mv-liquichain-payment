@@ -33,8 +33,6 @@ public class ConversionRateScript extends Script {
     public BigDecimal CFA_TO_EUR = new BigDecimal("0.015").setScale(24, HALF_UP);
     public BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
 
-    private long nextRateUpdate = 0;
-
     public final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>() {{
         put("LCN_TO_EUR", LCN_TO_EUR);
         put("EUR_TO_LCN", EUR_TO_LCN);
@@ -86,14 +84,9 @@ public class ConversionRateScript extends Script {
     }
 
     private void downloadRates() {
-        if (System.currentTimeMillis() < nextRateUpdate) {
-            return;
-        }
-
         try {
             EUR_TO_USD = tradeHistory.retrieveExchangeRate();
             setRates();
-            nextRateUpdate = System.currentTimeMillis() + RATE_EXCHANGE_QUERY_DELAY_IN_MS;
         } catch (Exception e) {
             LOG.warn("Failed to retrieve exchange rate: {}", e.getMessage());
         }
