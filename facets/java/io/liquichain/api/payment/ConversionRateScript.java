@@ -86,6 +86,7 @@ public class ConversionRateScript extends Script {
     private void downloadRates() {
         try {
             EUR_TO_USD = tradeHistory.retrieveExchangeRate();
+            LOG.info("EUR to USD exchange rate: {}", EUR_TO_USD);
             setRates();
         } catch (Exception e) {
             LOG.warn("Failed to retrieve exchange rate: {}", e.getMessage());
