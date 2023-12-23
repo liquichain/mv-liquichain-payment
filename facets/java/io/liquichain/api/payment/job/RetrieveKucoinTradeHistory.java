@@ -82,7 +82,7 @@ public class RetrieveKucoinTradeHistory extends Script {
 
             if (response.getStatus() == 200) {
                 String responseData = response.readEntity(String.class);
-                LOG.debug("Received response from kucoin: {}", responseData);
+                LOG.info("Received response from kucoin: {}", responseData);
                 saveData(responseData);
             } else {
                 throw new RuntimeException("Data retrieval failed. HTTP error code: {}" + response.getStatus());
@@ -91,7 +91,7 @@ public class RetrieveKucoinTradeHistory extends Script {
             updateCachedRate();
 
         } catch (Exception e) {
-            throw new BusinessException("Failed to retrieve trade history from kucoin.", e);
+            throw new BusinessException("Failed to retrieve trade history from kucoin. cause: " + e.getMessage(), e);
         }
     }
 
