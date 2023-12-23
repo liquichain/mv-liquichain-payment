@@ -4,6 +4,7 @@ import static org.meveo.commons.utils.StringUtils.isNotBlank;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class ExchangeRateProvider extends Script {
             return details;
         }).collect(Collectors.toList());
 
-        result = new LinkedHashMap<>() {{
+        result = new HashMap<>() {{
             put("from", from);
             put("to", to);
             put("data", tradeDetails);
