@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.crypto.Mac;
@@ -54,22 +55,6 @@ public class RetrieveKucoinTradeHistory extends Script {
     private final String apiPassphrase = config.getProperty("kucoin.api.passphrase", "");
     private final String exchangeRateKey = config.getProperty("exchangerate.api.key", "");
 
-    public BigDecimal retrieveKlubToUSDRate() {
-        String rate = conversionRate.getUsdRate();
-        if (isBlank(rate)) {
-            return parseDecimal("0.015");
-        }
-        return parseDecimal(conversionRate.getUsdRate());
-    }
-
-    public BigDecimal retrieveKlubToEurRate() {
-        String rate = conversionRate.getEurRate();
-        if (isBlank(rate)) {
-            return parseDecimal("1.1").multiply(parseDecimal("0.015")).setScale(9, HALF_UP);
-        }
-        return parseDecimal(conversionRate.getEurRate());
-    }
-
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
         try {
@@ -103,6 +88,32 @@ public class RetrieveKucoinTradeHistory extends Script {
         }
     }
 
+    public Map<String, String> retrieveConversionRateMap() {
+        return convert(toJson(conversionRate));
+    }
+
+    public Map<String, String> retrieveConversionRateMap(String sequenceId) {
+        Map<String, String> conversionRateMap;
+        try {
+            TradeHistory tradeHistory = crossStorageApi.find(defaultRepo, sequenceId, TradeHistory.class);
+
+            if (tradeHistory == null) {
+                conversionRateMap = convert(toJson(conversionRate));
+            } else {
+                conversionRateMap = new HashMap<>() {{
+                    put("usdRate", tradeHistory.getPrice());
+                    put("eurRate", tradeHistory.getPriceEuro());
+                    put("sequenceId", tradeHistory.getUuid());
+                }};
+            }
+        } catch (Exception e) {
+            LOG.warn("Failed to retrieve trade history with sequenceId: {}. Will return latest conversion rate ",
+                    sequenceId);
+            conversionRateMap = convert(toJson(conversionRate));
+        }
+        return conversionRateMap;
+    }
+
     private void updateCachedRate() {
         try {
             TradeHistory latestHistory = crossStorageApi.find(defaultRepo, TradeHistory.class)
@@ -113,6 +124,7 @@ public class RetrieveKucoinTradeHistory extends Script {
 
             conversionRate.setUsdRate(latestHistory.getPrice());
             conversionRate.setEurRate(latestHistory.getPriceEuro());
+            conversionRate.setSequenceId(latestHistory.getUuid());
         } catch (Exception e) {
             LOG.error("Failed to retrieve latest trade history.", e);
         }
@@ -270,14 +282,6 @@ public class RetrieveKucoinTradeHistory extends Script {
         return new BigDecimal(price).setScale(9, HALF_UP);
     }
 
-    public BigDecimal parseDecimal(Double price) {
-        return new BigDecimal(price).setScale(9, HALF_UP);
-    }
-
-    public BigDecimal parseInverse(String price) {
-        return BigDecimal.ONE.divide(parseDecimal(price), 9, HALF_UP);
-    }
-
     public BigDecimal parseInverse(BigDecimal price) {
         return BigDecimal.ONE.divide(price, 9, HALF_UP);
     }
@@ -285,15 +289,16 @@ public class RetrieveKucoinTradeHistory extends Script {
 }
 
 class ConversionRate {
-    private String usdRate;
-    private String eurRate;
+    private String usdRate = "0.015";
+    private String eurRate = String.valueOf(parseDecimal("1.1").multiply(parseDecimal("0.015")).setScale(9, HALF_UP));
+    private String sequenceId = null;
 
-    private static class ConveersionRateHolder {
+    private static class ConversionRateHolder {
         private static final ConversionRate INSTANCE = new ConversionRate();
     }
 
     public static ConversionRate getInstance() {
-        return ConveersionRateHolder.INSTANCE;
+        return ConversionRateHolder.INSTANCE;
     }
 
     public String getUsdRate() {
@@ -310,6 +315,18 @@ class ConversionRate {
 
     public void setEurRate(String eurRate) {
         this.eurRate = eurRate;
+    }
+
+    public String getSequenceId() {
+        return sequenceId;
+    }
+
+    public void setSequenceId(String sequenceId) {
+        this.sequenceId = sequenceId;
+    }
+
+    private BigDecimal parseDecimal(String price) {
+        return new BigDecimal(price).setScale(9, HALF_UP);
     }
 }
 

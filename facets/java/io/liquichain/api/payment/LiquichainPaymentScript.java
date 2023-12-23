@@ -1,6 +1,8 @@
 package io.liquichain.api.payment;
 
 import static java.math.RoundingMode.HALF_EVEN;
+import static java.math.RoundingMode.HALF_UP;
+import static org.meveo.commons.utils.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,6 +26,7 @@ import org.meveo.service.script.Script;
 import org.meveo.service.storage.RepositoryService;
 
 import io.liquichain.api.core.LiquichainTransaction;
+import io.liquichain.api.payment.job.RetrieveKucoinTradeHistory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +58,7 @@ public class LiquichainPaymentScript extends EndpointScript {
 
     private final LiquichainTransaction liquichainTransaction = new LiquichainTransaction();
     private final ConversionRateScript conversionRateScript = new ConversionRateScript();
+    private final RetrieveKucoinTradeHistory kucoinTradeHistory = new RetrieveKucoinTradeHistory();
     private String result;
     private String orderId = null;
 
@@ -73,6 +77,7 @@ public class LiquichainPaymentScript extends EndpointScript {
         Object accountParameter = parameters.get("account");
         Object toWalletParameter = parameters.get("toWallet");
         Object fromWalletParameter = parameters.get("fromWallet");
+        Object sequenceId = parameters.get("sequenceId");
 
         String toWalletId = null;
         if (toWalletParameter != null && StringUtils.isNotBlank("" + toWalletParameter)) {
@@ -121,7 +126,17 @@ public class LiquichainPaymentScript extends EndpointScript {
             String toCurrency = "" + toAmount.get("currency");
             String toValue = "" + toAmount.get("amount");
 
-            BigDecimal conversionRate = conversionRateScript.CONVERSION_RATE.get(fromCurrency + "_TO_" + toCurrency);
+            String conversionId = fromCurrency + "_TO_" + toCurrency;
+            Map<String, BigDecimal> conversionRates;
+            if (conversionRateScript.FROM_TRADE_HISTORY.contains(conversionId) && !isBlank(sequenceId)) {
+                Map<String, String> conversionRateMap = kucoinTradeHistory.retrieveConversionRateMap("" + sequenceId);
+                conversionRates = conversionRateScript.extractConversionRates(conversionRateMap);
+
+            } else {
+                conversionRates = conversionRateScript.CONVERSION_RATE;
+            }
+
+            BigDecimal conversionRate = conversionRates.get(conversionId);
             BigDecimal decimalFromValue = new BigDecimal(fromValue).setScale(18, HALF_EVEN);
             BigDecimal convertedFromValue = conversionRate.multiply(decimalFromValue).setScale(18, HALF_EVEN);
             BigDecimal parsedToValue = new BigDecimal(toValue).setScale(18, HALF_EVEN);
@@ -315,6 +330,14 @@ public class LiquichainPaymentScript extends EndpointScript {
                 "}";
         LOG.debug("error response: {}", response);
         return response;
+    }
+
+    private BigDecimal parseDecimal(String price) {
+        return new BigDecimal(price).setScale(9, HALF_UP);
+    }
+
+    private BigDecimal parseInverse(BigDecimal price) {
+        return BigDecimal.ONE.divide(price, 9, HALF_UP);
     }
 }
 

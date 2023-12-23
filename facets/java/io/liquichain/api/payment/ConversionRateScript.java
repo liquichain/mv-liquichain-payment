@@ -5,6 +5,7 @@ import static java.math.RoundingMode.HALF_UP;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,35 +36,46 @@ public class ConversionRateScript extends Script {
         put("EUR_TO_CFA", EUR_TO_CFA);
     }};
 
+    public final List<String> FROM_TRADE_HISTORY = List.of("KLUB_TO_USD", "USD_TO_KLUB", "KLUB_TO_EUR", "EUR_TO_KLUB");
+
     private Map<String, Object> result;
 
     public Map<String, Object> getResult() {
         return result;
     }
 
-    private void setRates() {
-        BigDecimal KLUB_TO_USD = parseDecimal("0.015");
-        BigDecimal KLUB_TO_EUR = parseDecimal("1.1").multiply(KLUB_TO_USD).setScale(9, HALF_UP);
-        BigDecimal klubToUSD = tradeHistory.retrieveKlubToUSDRate();
-        if (klubToUSD != null) {
-            KLUB_TO_USD = klubToUSD;
-        }
-        CONVERSION_RATE.put("KLUB_TO_USD", KLUB_TO_USD);
-        CONVERSION_RATE.put("USD_TO_KLUB", parseInverse(KLUB_TO_USD));
+    private String updateRates() {
+        Map<String, String> conversionRateMap = tradeHistory.retrieveConversionRateMap();
+        CONVERSION_RATE.putAll(extractConversionRates(conversionRateMap));
+        return conversionRateMap.get("sequenceId");
+    }
 
-        BigDecimal klubToEUR = tradeHistory.retrieveKlubToEurRate();
-        if (klubToEUR != null) {
-            KLUB_TO_EUR = klubToEUR;
+    public Map<String, BigDecimal> extractConversionRates(Map<String, String> conversionRateMap) {
+        BigDecimal klubToUsdRate = parseDecimal("0.015");
+        Map<String, BigDecimal> conversionRates = new HashMap<>();
+        BigDecimal klubToUSD = parseDecimal(conversionRateMap.get("usdRate"));
+        if (klubToUSD != null) {
+            klubToUsdRate = klubToUSD;
         }
-        CONVERSION_RATE.put("KLUB_TO_EUR", KLUB_TO_EUR);
-        CONVERSION_RATE.put("EUR_TO_KLUB", parseInverse(KLUB_TO_EUR));
+        conversionRates.put("KLUB_TO_USD", klubToUsdRate);
+        conversionRates.put("USD_TO_KLUB", parseInverse(klubToUsdRate));
+
+        BigDecimal klubToEurRate = parseDecimal("1.1").multiply(klubToUsdRate).setScale(9, HALF_UP);
+        BigDecimal klubToEUR = parseDecimal(conversionRateMap.get("eurRate"));
+        if (klubToEUR != null) {
+            klubToEurRate = klubToEUR;
+        }
+        conversionRates.put("KLUB_TO_EUR", klubToEurRate);
+        conversionRates.put("EUR_TO_KLUB", parseInverse(klubToEurRate));
+        return conversionRates;
     }
 
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
-        setRates();
+        String sequenceId = updateRates();
         result = new HashMap<>() {{
             put("timestamp", Instant.now().toEpochMilli());
+            put("sequenceId", sequenceId);
             put("data", CONVERSION_RATE
                     .entrySet().stream()
                     .map(entry -> {
