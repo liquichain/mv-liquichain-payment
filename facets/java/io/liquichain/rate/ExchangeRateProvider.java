@@ -66,8 +66,9 @@ public class ExchangeRateProvider extends Script {
         Instant from = isNotBlank(this.from) ? Instant.parse(this.from) : now.minus(1, ChronoUnit.DAYS);
         Instant to = isNotBlank(this.to) ? Instant.parse(this.to) : now;
 
+
         List<Map<String, Object>> tradeDetails;
-        if ("KLUB".equals(fromCurrency)) {
+        if ("KLC".equals(fromCurrency) || "KLUB".equals(fromCurrency)) {
             List<TradeHistory> tradeHistories = crossStorageApi.find(defaultRepo, TradeHistory.class)
                                                                .by("fromRange time", from)
                                                                .by("toRange time", to)
