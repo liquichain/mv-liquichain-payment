@@ -29,6 +29,7 @@ public class ExchangeRateProvider extends Script {
 
     private String fromCurrency;
     private String toCurrency;
+    private int maxValues = 100;
     private String from;
     private String to;
 
@@ -44,6 +45,10 @@ public class ExchangeRateProvider extends Script {
 
     public void setToCurrency(String toCurrency) {
         this.toCurrency = toCurrency;
+    }
+
+    public void setMaxValues(int maxValues) {
+        this.maxValues = maxValues;
     }
 
     public void setFrom(String from) {
@@ -67,6 +72,7 @@ public class ExchangeRateProvider extends Script {
                                                                .by("fromRange time", from)
                                                                .by("toRange time", to)
                                                                .orderBy("time", true)
+                                                               .limit(maxValues)
                                                                .getResults();
 
             tradeDetails = tradeHistories.stream().map(tradeHistory -> {
