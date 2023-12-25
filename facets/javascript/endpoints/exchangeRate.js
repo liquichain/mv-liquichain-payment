@@ -1,6 +1,14 @@
 const exchangeRate = async (parameters) =>  {
 	const baseUrl = window.location.origin;
-	const url = new URL(`${window.location.pathname.split('/')[1]}/rest/exchangeRate/${parameters.toCurrency}`, baseUrl);
+	const url = new URL(`${window.location.pathname.split('/')[1]}/rest/exchangeRate/${parameters.fromCurrency}/${parameters.toCurrency}`, baseUrl);
+	if (parameters.from !== undefined) {
+		url.searchParams.append('from', parameters.from);
+	}
+
+	if (parameters.to !== undefined) {
+		url.searchParams.append('to', parameters.to);
+	}
+
 	if (parameters.from !== undefined) {
 		url.searchParams.append('from', parameters.from);
 	}
@@ -16,32 +24,50 @@ const exchangeRate = async (parameters) =>  {
 
 const exchangeRateForm = (container) => {
 	const html = `<form id='exchangeRate-form'>
+		<div id='exchangeRate-fromCurrency-form-field'>
+			<label for='fromCurrency'>fromCurrency</label>
+			<input type='text' id='exchangeRate-fromCurrency-param' name='fromCurrency'/>
+		</div>
 		<div id='exchangeRate-toCurrency-form-field'>
 			<label for='toCurrency'>toCurrency</label>
 			<input type='text' id='exchangeRate-toCurrency-param' name='toCurrency'/>
 		</div>
-		<div id='exchangeRate-from-form-field'>
-			<label for='from'>from</label>
-			<input type='text' id='exchangeRate-from-param' name='from'/>
+		<div id='exchangeRate-null-form-field'>
+			<label for='null'>null</label>
+			<input type='text' id='exchangeRate-null-param' name='null'/>
 		</div>
-		<div id='exchangeRate-to-form-field'>
-			<label for='to'>to</label>
-			<input type='text' id='exchangeRate-to-param' name='to'/>
+		<div id='exchangeRate-null-form-field'>
+			<label for='null'>null</label>
+			<input type='text' id='exchangeRate-null-param' name='null'/>
+		</div>
+		<div id='exchangeRate-null-form-field'>
+			<label for='null'>null</label>
+			<input type='text' id='exchangeRate-null-param' name='null'/>
+		</div>
+		<div id='exchangeRate-null-form-field'>
+			<label for='null'>null</label>
+			<input type='text' id='exchangeRate-null-param' name='null'/>
 		</div>
 		<button type='button'>Test</button>
 	</form>`;
 
 	container.insertAdjacentHTML('beforeend', html)
 
+	const fromCurrency = container.querySelector('#exchangeRate-fromCurrency-param');
 	const toCurrency = container.querySelector('#exchangeRate-toCurrency-param');
-	const from = container.querySelector('#exchangeRate-from-param');
-	const to = container.querySelector('#exchangeRate-to-param');
+	const null = container.querySelector('#exchangeRate-null-param');
+	const null = container.querySelector('#exchangeRate-null-param');
+	const null = container.querySelector('#exchangeRate-null-param');
+	const null = container.querySelector('#exchangeRate-null-param');
 
 	container.querySelector('#exchangeRate-form button').onclick = () => {
 		const params = {
+			fromCurrency : fromCurrency.value !== "" ? fromCurrency.value : undefined,
 			toCurrency : toCurrency.value !== "" ? toCurrency.value : undefined,
-			from : from.value !== "" ? from.value : undefined,
-			to : to.value !== "" ? to.value : undefined
+			null : null.value !== "" ? null.value : undefined,
+			null : null.value !== "" ? null.value : undefined,
+			null : null.value !== "" ? null.value : undefined,
+			null : null.value !== "" ? null.value : undefined
 		};
 
 		exchangeRate(params).then(r => r.text().then(

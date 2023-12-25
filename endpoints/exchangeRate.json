@@ -9,21 +9,27 @@
   "parameterMappings" : [ {
     "serviceParameter" : "from",
     "multivalued" : false,
-    "parameterName" : "from",
     "valueRequired" : false
   }, {
     "serviceParameter" : "to",
     "multivalued" : false,
-    "parameterName" : "to",
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "from",
+    "multivalued" : false,
+    "valueRequired" : false
+  }, {
+    "serviceParameter" : "to",
+    "multivalued" : false,
     "valueRequired" : false
   } ],
-  "pathParameters" : [ "toCurrency" ],
+  "pathParameters" : [ "fromCurrency", "toCurrency" ],
   "roles" : [ ],
   "returnedVariableName" : "result",
   "serializeResult" : true,
   "contentType" : "application/json",
   "basePath" : "exchangeRate",
-  "path" : "/{toCurrency}",
+  "path" : "/{fromCurrency}/{toCurrency}",
   "pool" : {
     "usePool" : false
   }

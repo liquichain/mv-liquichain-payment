@@ -8,18 +8,15 @@
     "name" : "toCurrency",
     "type" : "String"
   }, {
-    "name" : "fromDate",
+    "name" : "from",
     "type" : "String"
   }, {
-    "name" : "toDate",
+    "name" : "to",
     "type" : "String"
-  }, {
-    "name" : "maxValues",
-    "type" : "long"
   } ],
   "outputs" : [ {
     "name" : "result",
-    "type" : "String"
+    "type" : "Map<String,Object>"
   } ],
   "generateOutputs" : false,
   "type" : "JAVA",
@@ -27,5 +24,5 @@
   "executionRoles" : [ ],
   "sourcingRoles" : [ ],
   "mavenDependencies" : [ ],
-  "importScriptInstances" : [ "io.liquichain.api.payment.ConversionRateScript" ]
+  "importScriptInstances" : [ ]
 }
