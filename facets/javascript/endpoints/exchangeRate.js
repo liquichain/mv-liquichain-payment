@@ -1,79 +1,73 @@
-const exchangeRate = async (parameters) =>  {
-	const baseUrl = window.location.origin;
-	const url = new URL(`${window.location.pathname.split('/')[1]}/rest/exchangeRate/${parameters.fromCurrency}/${parameters.toCurrency}`, baseUrl);
-	if (parameters.from !== undefined) {
-		url.searchParams.append('from', parameters.from);
-	}
+import EndpointInterface from "#{API_BASE_URL}/api/rest/endpoint/EndpointInterface.js";
 
-	if (parameters.to !== undefined) {
-		url.searchParams.append('to', parameters.to);
-	}
-
-	if (parameters.from !== undefined) {
-		url.searchParams.append('from', parameters.from);
-	}
-
-	if (parameters.to !== undefined) {
-		url.searchParams.append('to', parameters.to);
-	}
-
-	return fetch(url.toString(), {
-		method: 'GET'
-	});
+// the request schema, this should be updated
+// whenever changes to the endpoint parameters are made
+// this is important because this is used to validate and parse the request parameters
+const requestSchema = {
+  "title" : "exchangeRateRequest",
+  "id" : "exchangeRateRequest",
+  "default" : "Schema definition for exchangeRate",
+  "$schema" : "http://json-schema.org/draft-07/schema",
+  "type" : "object",
+  "properties" : {
+    "from" : {
+      "title" : "from",
+      "id" : "exchangeRate_from",
+      "type" : "string",
+      "minLength" : 1
+    },
+    "to" : {
+      "title" : "to",
+      "id" : "exchangeRate_to",
+      "type" : "string",
+      "minLength" : 1
+    },
+    "maxValues" : {
+      "title" : "maxValues",
+      "id" : "exchangeRate_maxValues",
+      "type" : "string",
+      "minLength" : 1
+    }
+  }
 }
 
-const exchangeRateForm = (container) => {
-	const html = `<form id='exchangeRate-form'>
-		<div id='exchangeRate-fromCurrency-form-field'>
-			<label for='fromCurrency'>fromCurrency</label>
-			<input type='text' id='exchangeRate-fromCurrency-param' name='fromCurrency'/>
-		</div>
-		<div id='exchangeRate-toCurrency-form-field'>
-			<label for='toCurrency'>toCurrency</label>
-			<input type='text' id='exchangeRate-toCurrency-param' name='toCurrency'/>
-		</div>
-		<div id='exchangeRate-null-form-field'>
-			<label for='null'>null</label>
-			<input type='text' id='exchangeRate-null-param' name='null'/>
-		</div>
-		<div id='exchangeRate-null-form-field'>
-			<label for='null'>null</label>
-			<input type='text' id='exchangeRate-null-param' name='null'/>
-		</div>
-		<div id='exchangeRate-null-form-field'>
-			<label for='null'>null</label>
-			<input type='text' id='exchangeRate-null-param' name='null'/>
-		</div>
-		<div id='exchangeRate-null-form-field'>
-			<label for='null'>null</label>
-			<input type='text' id='exchangeRate-null-param' name='null'/>
-		</div>
-		<button type='button'>Test</button>
-	</form>`;
-
-	container.insertAdjacentHTML('beforeend', html)
-
-	const fromCurrency = container.querySelector('#exchangeRate-fromCurrency-param');
-	const toCurrency = container.querySelector('#exchangeRate-toCurrency-param');
-	const null = container.querySelector('#exchangeRate-null-param');
-	const null = container.querySelector('#exchangeRate-null-param');
-	const null = container.querySelector('#exchangeRate-null-param');
-	const null = container.querySelector('#exchangeRate-null-param');
-
-	container.querySelector('#exchangeRate-form button').onclick = () => {
-		const params = {
-			fromCurrency : fromCurrency.value !== "" ? fromCurrency.value : undefined,
-			toCurrency : toCurrency.value !== "" ? toCurrency.value : undefined,
-			null : null.value !== "" ? null.value : undefined,
-			null : null.value !== "" ? null.value : undefined,
-			null : null.value !== "" ? null.value : undefined,
-			null : null.value !== "" ? null.value : undefined
-		};
-
-		exchangeRate(params).then(r => r.text().then(
-				t => alert(t)
-			));
-	};
+// the response schema, this should be updated
+// whenever changes to the endpoint parameters are made
+// this is important because this could be used to parse the result
+const responseSchema = {
+  "title" : "exchangeRateResponse",
+  "id" : "exchangeRateResponse",
+  "default" : "Schema definition for exchangeRate",
+  "$schema" : "http://json-schema.org/draft-07/schema",
+  "type" : "object",
+  "properties" : {
+    "result" : {
+      "title" : "result",
+      "type" : "string",
+      "minLength" : 1
+    }
+  }
 }
 
-export { exchangeRate, exchangeRateForm };
+// should contain offline mock data, make sure it adheres to the response schema
+const mockResult = {};
+
+class exchangeRate extends EndpointInterface {
+	constructor() {
+		// name and http method, these are inserted when code is generated
+		super("exchangeRate", "GET");
+		this.requestSchema = requestSchema;
+		this.responseSchema = responseSchema;
+		this.mockResult = mockResult;
+	}
+
+	getRequestSchema() {
+		return this.requestSchema;
+	}
+
+	getResponseSchema() {
+		return this.responseSchema;
+	}
+}
+
+export default new exchangeRate();

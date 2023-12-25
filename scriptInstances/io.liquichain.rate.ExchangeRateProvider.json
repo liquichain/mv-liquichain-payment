@@ -8,6 +8,9 @@
     "name" : "toCurrency",
     "type" : "String"
   }, {
+    "name" : "maxValues",
+    "type" : "int"
+  }, {
     "name" : "from",
     "type" : "String"
   }, {

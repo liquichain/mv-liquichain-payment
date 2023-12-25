@@ -7,20 +7,19 @@
   "synchronous" : true,
   "method" : "GET",
   "parameterMappings" : [ {
-    "serviceParameter" : "from",
+    "serviceParameter" : "maxValues",
     "multivalued" : false,
-    "valueRequired" : false
-  }, {
-    "serviceParameter" : "to",
-    "multivalued" : false,
+    "parameterName" : "maxValues",
     "valueRequired" : false
   }, {
     "serviceParameter" : "from",
     "multivalued" : false,
+    "parameterName" : "from",
     "valueRequired" : false
   }, {
     "serviceParameter" : "to",
     "multivalued" : false,
+    "parameterName" : "to",
     "valueRequired" : false
   } ],
   "pathParameters" : [ "fromCurrency", "toCurrency" ],
