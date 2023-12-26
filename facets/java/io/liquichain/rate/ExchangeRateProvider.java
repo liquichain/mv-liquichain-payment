@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.meveo.admin.exception.BusinessException;
 import org.meveo.api.persistence.CrossStorageApi;
+import org.meveo.api.persistence.CrossStorageRequest;
 import org.meveo.model.customEntities.TradeHistory;
 import org.meveo.model.storage.Repository;
 import org.meveo.service.script.Script;
@@ -29,7 +30,7 @@ public class ExchangeRateProvider extends Script {
 
     private String fromCurrency;
     private String toCurrency;
-    private int maxValues = 100;
+    private int maxValues;
     private String from;
     private String to;
 
@@ -66,15 +67,17 @@ public class ExchangeRateProvider extends Script {
         Instant from = isNotBlank(this.from) ? Instant.parse(this.from) : now.minus(1, ChronoUnit.DAYS);
         Instant to = isNotBlank(this.to) ? Instant.parse(this.to) : now;
 
-
         List<Map<String, Object>> tradeDetails;
         if ("KLC".equals(fromCurrency) || "KLUB".equals(fromCurrency)) {
-            List<TradeHistory> tradeHistories = crossStorageApi.find(defaultRepo, TradeHistory.class)
-                                                               .by("fromRange time", from)
-                                                               .by("toRange time", to)
-                                                               .orderBy("time", true)
-                                                               .limit(maxValues)
-                                                               .getResults();
+            CrossStorageRequest<TradeHistory> historyRequest = crossStorageApi.find(defaultRepo, TradeHistory.class)
+                                                                              .by("fromRange time", from)
+                                                                              .by("toRange time", to)
+                                                                              .orderBy("time", true);
+
+            if (maxValues > 0) {
+                historyRequest.limit(maxValues);
+            }
+            List<TradeHistory> tradeHistories = historyRequest.getResults();
 
             tradeDetails = tradeHistories.stream().map(tradeHistory -> {
                 Map<String, Object> details = new HashMap<>();
