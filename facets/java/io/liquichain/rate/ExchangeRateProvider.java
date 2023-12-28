@@ -208,4 +208,5 @@ public class ExchangeRateProvider extends Script {
     public BigDecimal parseDecimal(String price) {
         return new BigDecimal(price).setScale(9, HALF_UP);
     }
+
 }
