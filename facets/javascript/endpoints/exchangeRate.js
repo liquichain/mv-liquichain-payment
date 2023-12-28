@@ -10,6 +10,12 @@ const requestSchema = {
   "$schema" : "http://json-schema.org/draft-07/schema",
   "type" : "object",
   "properties" : {
+    "epsilon" : {
+      "title" : "epsilon",
+      "id" : "exchangeRate_epsilon",
+      "type" : "string",
+      "minLength" : 1
+    },
     "from" : {
       "title" : "from",
       "id" : "exchangeRate_from",

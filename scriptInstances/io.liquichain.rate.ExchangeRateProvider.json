@@ -16,6 +16,9 @@
   }, {
     "name" : "to",
     "type" : "String"
+  }, {
+    "name" : "epsilon",
+    "type" : "Double"
   } ],
   "outputs" : [ {
     "name" : "result",
