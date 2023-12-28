@@ -74,6 +74,10 @@ public class ExchangeRateProvider extends Script {
         this.to = to;
     }
 
+    public void setEpsilon(Double epsilon) {
+        this.epsilon = epsilon;
+    }
+
     @Override
     public void execute(Map<String, Object> parameters) throws BusinessException {
         LOG.info("Retrieving exchange rate for currency: {}", toCurrency);
