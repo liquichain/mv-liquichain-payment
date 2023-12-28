@@ -46,7 +46,7 @@ public class ExchangeRateProvider extends Script {
     private int maxValues;
     private String from;
     private String to;
-    private Double epsilon = 0.0001;
+    private Double epsilon = 0.00001;
 
     private Map<String, Object> result;
 
