@@ -21,6 +21,11 @@
     "multivalued" : false,
     "parameterName" : "to",
     "valueRequired" : false
+  }, {
+    "serviceParameter" : "epsilon",
+    "multivalued" : false,
+    "parameterName" : "epsilon",
+    "valueRequired" : false
   } ],
   "pathParameters" : [ "fromCurrency", "toCurrency" ],
   "roles" : [ ],
