@@ -4,6 +4,7 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.meveo.commons.utils.StringUtils.isBlank;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -164,7 +165,8 @@ public class RetrieveKucoinTradeHistory extends Script {
             String sequence = "" + item.get("sequence");
             String price = "" + item.get("price");
             BigDecimal currentPrice = parseDecimal(price);
-            String priceEuro = String.valueOf(currentPrice.multiply(eurToUsd).setScale(9, HALF_UP));
+            String priceEuro = String.valueOf(currentPrice.divide(eurToUsd, RoundingMode.HALF_UP)
+                                                          .setScale(9, HALF_UP));
             String size = "" + item.get("size");
             String side = "" + item.get("side");
             Instant time = Instant.ofEpochMilli(((Long) item.get("time")) / 1000000);
