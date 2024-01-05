@@ -8,12 +8,12 @@
       "entityReferenceValue" : {
         "classname" : "org.meveo.model.scripts.ScriptInstance",
         "code" : "io.liquichain.api.payment.job.RetrieveKucoinTradeHistory",
-        "id" : 96
+        "id" : 216
       }
     } ]
   },
   "jobCategory" : "MEDIATION",
   "jobTemplate" : "ScriptingJob",
-  "timerCode" : "10sec",
+  "timerCode" : "30sec",
   "limitToSingleNode" : true
 }

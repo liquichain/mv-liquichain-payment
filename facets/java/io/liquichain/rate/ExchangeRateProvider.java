@@ -46,7 +46,7 @@ public class ExchangeRateProvider extends Script {
     private int maxValues;
     private String from;
     private String to;
-    private Double epsilon = 0.00001;
+    private Double epsilon = 0.0001;
 
     private Map<String, Object> result;
 
@@ -97,7 +97,7 @@ public class ExchangeRateProvider extends Script {
             }
 
             List<TradeHistory> tradeHistories = historyRequest.getResults();
-            List<TradeHistory> simplifiedHistory = tradeHistories.size() > 100
+            List<TradeHistory> simplifiedHistory = tradeHistories.size() > 1000
                     ? simplifyTradeHistory(tradeHistories)
                     : tradeHistories;
             tradeDetails.addAll(mapHistoryByCurrency(simplifiedHistory));

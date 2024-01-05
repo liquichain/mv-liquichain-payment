@@ -1,0 +1,12 @@
+{
+  "code" : "30sec",
+  "description" : "30 second timer",
+  "hour" : "*",
+  "minute" : "*",
+  "second" : "0,30",
+  "year" : "*",
+  "month" : "*",
+  "dayOfMonth" : "*",
+  "dayOfWeek" : "*",
+  "timezone" : "GMT"
+}
