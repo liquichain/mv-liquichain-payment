@@ -29,6 +29,19 @@ public class ConversionRateScript extends Script {
     public BigDecimal CFA_TO_EUR = new BigDecimal("0.015").setScale(24, HALF_UP);
     public BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
 
+    public BigDecimal getConversionRate(String rateKey) {
+
+        LOG.info("getConversionRate: {}", rateKey);
+        BigDecimal rate = CONVERSION_RATE.get(rateKey);
+        if (rate == null) {
+            updateRates();
+            CONVERSION_RATE.forEach((key, value) -> LOG.info("rate: {} = {}", key, value));
+            rate = CONVERSION_RATE.get(rateKey);
+            LOG.info("rate: {} = {}", rateKey, rate);
+        }
+        return rate;
+    }
+
     public final Map<String, BigDecimal> CONVERSION_RATE = new HashMap<>() {{
         put("LCN_TO_EUR", LCN_TO_EUR);
         put("EUR_TO_LCN", EUR_TO_LCN);
