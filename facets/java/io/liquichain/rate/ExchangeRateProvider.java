@@ -153,7 +153,7 @@ public class ExchangeRateProvider extends Script {
 
         List<Point> allPoints = convertHistoryToPoints(tradeHistories);
         while (true) {
-            Integer split = iterativeSplit(allPoints, keep.get(keep.size() - 1), epsilon);
+            Integer split = iterativeSplit(allPoints, keep.get(keep.size() - 1));
             if (split == null) {
                 return simplifiedList;
             }
@@ -162,25 +162,10 @@ public class ExchangeRateProvider extends Script {
         }
     }
 
-    public Integer iterativeSplit(List<Point> points, int p0, double epsilon) {
+    public Integer iterativeSplit(List<Point> points, int p0) {
         if (p0 >= points.size() - 1) {
             return null;
         }
-
-        BiFunction<Point, Point, double[]> calcXi = (point1, point2) -> {
-            double x1 = point1.x;
-            double y1 = point1.y;
-            double x2 = point2.x;
-            double y2 = point2.y;
-
-            double dx = x2 - x1;
-            double dy = y2 - y1;
-
-            return new double[] {
-                    (dy + epsilon) / dx,
-                    (dy - epsilon) / dx
-            };
-        };
 
         Point p0Point = points.get(p0);
         Point p1Point = points.get(p0 + 1);
@@ -204,6 +189,21 @@ public class ExchangeRateProvider extends Script {
 
         return points.size() - 1;
     }
+
+    private final BiFunction<Point, Point, double[]> calcXi = (point1, point2) -> {
+        double x1 = point1.x;
+        double y1 = point1.y;
+        double x2 = point2.x;
+        double y2 = point2.y;
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        return new double[] {
+                (dy + epsilon) / dx,
+                (dy - epsilon) / dx
+        };
+    };
 
     public BigDecimal parseDecimal(String price) {
         return new BigDecimal(price).setScale(9, HALF_UP);

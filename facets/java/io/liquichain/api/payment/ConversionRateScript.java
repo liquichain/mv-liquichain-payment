@@ -30,7 +30,6 @@ public class ConversionRateScript extends Script {
     public BigDecimal EUR_TO_CFA = BigDecimal.ONE.divide(CFA_TO_EUR, 24, HALF_UP);
 
     public BigDecimal getConversionRate(String rateKey) {
-
         LOG.info("getConversionRate: {}", rateKey);
         BigDecimal rate = CONVERSION_RATE.get(rateKey);
         if (rate == null) {
