@@ -127,16 +127,17 @@ public class LiquichainPaymentScript extends EndpointScript {
             String toValue = "" + toAmount.get("amount");
 
             String conversionId = fromCurrency + "_TO_" + toCurrency;
-            Map<String, BigDecimal> conversionRates;
+            BigDecimal conversionRate;
             if (conversionRateScript.FROM_TRADE_HISTORY.contains(conversionId) && !isBlank(sequenceId)) {
                 Map<String, String> conversionRateMap = kucoinTradeHistory.retrieveConversionRateMap("" + sequenceId);
-                conversionRates = conversionRateScript.extractConversionRates(conversionRateMap);
-
+                Map<String, BigDecimal> conversionRates =  conversionRateScript.extractConversionRates(conversionRateMap);
+                conversionRate = conversionRates.get(conversionId);
             } else {
-                conversionRates = conversionRateScript.CONVERSION_RATE;
+                conversionRate = conversionRateScript.getConversionRate(conversionId);
             }
-
-            BigDecimal conversionRate = conversionRates.get(conversionId);
+            LOG.info("conversionId: {}", conversionId);
+            LOG.info("conversionRate: {}", conversionRate);
+            
             BigDecimal decimalFromValue = new BigDecimal(fromValue).setScale(18, HALF_EVEN);
             BigDecimal convertedFromValue = conversionRate.multiply(decimalFromValue).setScale(18, HALF_EVEN);
             BigDecimal parsedToValue = new BigDecimal(toValue).setScale(18, HALF_EVEN);
